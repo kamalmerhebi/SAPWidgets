@@ -30,128 +30,166 @@ var getScriptPromisify = (src) => {
   };
 
   const parseDataBinding = (dataBinding) => {
-    if (!dataBinding || !dataBinding.data) {
-      console.warn('Invalid data binding:', dataBinding);
-      return { data: [], dataAxis: [] };
-    }
-
-    const { data, metadata } = dataBinding;
-    const { dimensions, measures } = parseMetadata(metadata);
-
-    if (!dimensions.length || !measures.length) {
-      console.warn('No dimensions or measures found in data binding');
-      return { data: [], dataAxis: [] };
-    }
-
-    // dimension
-    const categoryData = [];
-    // measures
-    const series = measures.map(measure => ({
-      data: [],
-      key: measure.key
-    }));
-
-    data.forEach(row => {
-      if (!row) return;
-      // dimension
-      try {
-        categoryData.push(dimensions.map(dimension => {
-          const dimData = row[dimension.key];
-          return dimData && dimData.label ? dimData.label : '';
-        }).join('/'));
-        // measures
-        series.forEach(series => {
-          const measureData = row[series.key];
-          series.data.push(measureData && measureData.raw !== undefined ? measureData.raw : 0);
-        });
-      } catch (err) {
-        console.warn('Error processing row:', row, err);
+    try {
+      if (!dataBinding || typeof dataBinding !== 'object') {
+        console.warn('Data binding is not an object:', dataBinding);
+        return { data: [], dataAxis: [] };
       }
-    });
 
-    return { data: series[0].data, dataAxis: categoryData };
+      const data = dataBinding.data || [];
+      const metadata = dataBinding.metadata;
+
+      if (!Array.isArray(data)) {
+        console.warn('Data is not an array:', data);
+        return { data: [], dataAxis: [] };
+      }
+
+      const { dimensions, measures } = parseMetadata(metadata);
+
+      if (!dimensions.length || !measures.length) {
+        console.warn('No dimensions or measures found in data binding');
+        return { data: [], dataAxis: [] };
+      }
+
+      // dimension
+      const categoryData = [];
+      // measures
+      const series = measures.map(measure => ({
+        data: [],
+        key: measure.key
+      }));
+
+      data.forEach(row => {
+        if (!row) return;
+        // dimension
+        try {
+          const labels = dimensions.map(dimension => {
+            const dimData = row[dimension.key];
+            return dimData && dimData.label ? dimData.label : '';
+          }).filter(label => label !== '');
+
+          if (labels.length > 0) {
+            categoryData.push(labels.join('/'));
+            // measures
+            series.forEach(series => {
+              const measureData = row[series.key];
+              series.data.push(measureData && measureData.raw !== undefined ? measureData.raw : 0);
+            });
+          }
+        } catch (err) {
+          console.warn('Error processing row:', row, err);
+        }
+      });
+
+      if (!categoryData.length || !series[0].data.length) {
+        console.warn('No valid data processed');
+        return { data: [], dataAxis: [] };
+      }
+
+      return { data: series[0].data, dataAxis: categoryData };
+    } catch (err) {
+      console.error('Error in parseDataBinding:', err);
+      return { data: [], dataAxis: [] };
+    }
   };
 
   const getOption = (dataBinding) => {
-    const { data, dataAxis } = parseDataBinding(dataBinding);
-    if (!data.length) {
+    try {
+      const { data, dataAxis } = parseDataBinding(dataBinding);
+      
+      if (!data.length) {
+        return {
+          option: {
+            title: {
+              text: 'No data available',
+              left: 'center',
+              top: 'center'
+            }
+          },
+          data: [],
+          dataAxis: []
+        };
+      }
+
+      let yMax = 0;
+      data.forEach(y => {
+        yMax = Math.max(y || 0, yMax);
+      });
+      const dataShadow = Array(data.length).fill(yMax);
+
+      const option = {
+        title: {
+          text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
+        },
+        xAxis: {
+          data: dataAxis,
+          axisLabel: {
+            inside: true,
+            color: '#000'
+          },
+          axisTick: {
+            show: false
+          },
+          axisLine: {
+            show: false
+          },
+          z: 10
+        },
+        yAxis: {
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            color: '#999'
+          }
+        },
+        dataZoom: [
+          {
+            type: 'inside'
+          }
+        ],
+        series: [
+          {
+            type: 'bar',
+            showBackground: true,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#83bff6' },
+                { offset: 0.5, color: '#188df0' },
+                { offset: 1, color: '#188df0' }
+              ])
+            },
+            emphasis: {
+              itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: '#2378f7' },
+                  { offset: 0.7, color: '#2378f7' },
+                  { offset: 1, color: '#83bff6' }
+                ])
+              }
+            },
+            data: data
+          }
+        ]
+      };
+      return { option, data, dataAxis };
+    } catch (err) {
+      console.error('Error in getOption:', err);
       return {
         option: {
           title: {
-            text: 'No data available'
+            text: 'Error loading chart',
+            left: 'center',
+            top: 'center'
           }
         },
         data: [],
         dataAxis: []
       };
     }
-
-    let yMax = 0;
-    data.forEach(y => {
-      yMax = Math.max(y || 0, yMax);
-    });
-    const dataShadow = Array(data.length).fill(yMax);
-
-    const option = {
-      title: {
-        text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
-      },
-      xAxis: {
-        data: dataAxis,
-        axisLabel: {
-          inside: true,
-          color: '#000'
-        },
-        axisTick: {
-          show: false
-        },
-        axisLine: {
-          show: false
-        },
-        z: 10
-      },
-      yAxis: {
-        axisLine: {
-          show: false
-        },
-        axisTick: {
-          show: false
-        },
-        axisLabel: {
-          formatter: '{value} Million',
-          color: '#999'
-        }
-      },
-      dataZoom: [
-        {
-          type: 'inside'
-        }
-      ],
-      series: [
-        {
-          type: 'bar',
-          showBackground: true,
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#83bff6' },
-              { offset: 0.5, color: '#188df0' },
-              { offset: 1, color: '#188df0' }
-            ])
-          },
-          emphasis: {
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#2378f7' },
-                { offset: 0.7, color: '#2378f7' },
-                { offset: 1, color: '#83bff6' }
-              ])
-            }
-          },
-          data: data
-        }
-      ]
-    };
-    return { option, data, dataAxis };
   };
 
   const template = document.createElement('template')
@@ -161,15 +199,16 @@ var getScriptPromisify = (src) => {
       <div id="root" style="width: 100%; height: 100%;">
       </div>
     `
+
   class Main extends HTMLElement {
     constructor () {
       super()
-      
       this._shadowRoot = this.attachShadow({ mode: 'open' })
       this._shadowRoot.appendChild(template.content.cloneNode(true))
       this._root = this._shadowRoot.getElementById('root')
       this._props = {}
       this._initialized = false
+      this._myChart = null
     }
 
     async connectedCallback() {
@@ -187,7 +226,8 @@ var getScriptPromisify = (src) => {
 
     disconnectedCallback() {
       if (this._myChart) {
-        echarts.dispose(this._myChart);
+        this._myChart.dispose();
+        this._myChart = null;
       }
     }
 
@@ -203,24 +243,34 @@ var getScriptPromisify = (src) => {
 
     async render () {
       try {
-        if (!this._initialized) return;
+        if (!this._initialized) {
+          console.warn('Chart not initialized yet');
+          return;
+        }
         
         if (this._myChart) {
-          echarts.dispose(this._myChart)
+          this._myChart.dispose();
+          this._myChart = null;
         }
 
-        if (!this.myDataBinding || this.myDataBinding.state !== 'success') { 
+        if (!this.myDataBinding) {
+          console.warn('No data binding available');
           this._root.innerHTML = 'Waiting for data...';
           return;
         }
 
-        const myChart = this._myChart = echarts.init(this._root)
-        const { option, data, dataAxis } = getOption(this.myDataBinding)
+        const myChart = this._myChart = echarts.init(this._root);
+        const { option, data, dataAxis } = getOption(this.myDataBinding);
         
-        myChart.setOption(option)
+        if (!data.length) {
+          this._root.innerHTML = 'No data available';
+          return;
+        }
+
+        myChart.setOption(option);
 
         // Enable data zoom when user click bar.
-        const zoomSize = 6
+        const zoomSize = 6;
         myChart.on('click', (params) => {
           const startIdx = Math.max(params.dataIndex - zoomSize / 2, 0);
           const endIdx = Math.min(params.dataIndex + zoomSize / 2, data.length - 1);
@@ -229,8 +279,8 @@ var getScriptPromisify = (src) => {
             type: 'dataZoom',
             startValue: dataAxis[startIdx],
             endValue: dataAxis[endIdx]
-          })
-        })
+          });
+        });
       } catch (err) {
         console.error('Error rendering chart:', err);
         this._root.innerHTML = 'Error rendering chart. Please check console for details.';
