@@ -11,55 +11,87 @@ var getScriptPromisify = (src) => {
 
 (function () {
   const parseMetadata = metadata => {
-    const { dimensions: dimensionsMap, mainStructureMembers: measuresMap } = metadata
-    const dimensions = []
+    if (!metadata) {
+      console.warn('No metadata provided');
+      return { dimensions: [], measures: [], dimensionsMap: {}, measuresMap: {} };
+    }
+    const { dimensions: dimensionsMap = {}, mainStructureMembers: measuresMap = {} } = metadata;
+    const dimensions = [];
     for (const key in dimensionsMap) {
-      const dimension = dimensionsMap[key]
-      dimensions.push({ key, ...dimension })
+      const dimension = dimensionsMap[key];
+      dimensions.push({ key, ...dimension });
     }
-    const measures = []
+    const measures = [];
     for (const key in measuresMap) {
-      const measure = measuresMap[key]
-      measures.push({ key, ...measure })
+      const measure = measuresMap[key];
+      measures.push({ key, ...measure });
     }
-    return { dimensions, measures, dimensionsMap, measuresMap }
-  }
+    return { dimensions, measures, dimensionsMap, measuresMap };
+  };
 
   const parseDataBinding = (dataBinding) => {
-    const { data, metadata } = dataBinding
-    const { dimensions, measures } = parseMetadata(metadata)
+    if (!dataBinding || !dataBinding.data) {
+      console.warn('Invalid data binding:', dataBinding);
+      return { data: [], dataAxis: [] };
+    }
+
+    const { data, metadata } = dataBinding;
+    const { dimensions, measures } = parseMetadata(metadata);
+
+    if (!dimensions.length || !measures.length) {
+      console.warn('No dimensions or measures found in data binding');
+      return { data: [], dataAxis: [] };
+    }
 
     // dimension
-    const categoryData = []
+    const categoryData = [];
     // measures
-    const series = measures.map(measure => {
-      return {
-        data: [],
-        key: measure.key
-      }
-    })
+    const series = measures.map(measure => ({
+      data: [],
+      key: measure.key
+    }));
+
     data.forEach(row => {
-    // dimension
-      categoryData.push(dimensions.map(dimension => {
-        return row[dimension.key].label
-      }).join('/'))
-      // measures
-      series.forEach(series => {
-        series.data.push(row[series.key].raw)
-      })
-    })
-    return { data: series[0].data, dataAxis: categoryData }
-  }
+      if (!row) return;
+      // dimension
+      try {
+        categoryData.push(dimensions.map(dimension => {
+          const dimData = row[dimension.key];
+          return dimData && dimData.label ? dimData.label : '';
+        }).join('/'));
+        // measures
+        series.forEach(series => {
+          const measureData = row[series.key];
+          series.data.push(measureData && measureData.raw !== undefined ? measureData.raw : 0);
+        });
+      } catch (err) {
+        console.warn('Error processing row:', row, err);
+      }
+    });
+
+    return { data: series[0].data, dataAxis: categoryData };
+  };
+
   const getOption = (dataBinding) => {
-    const { data, dataAxis } = parseDataBinding(dataBinding)
-    let yMax = 0
-    data.forEach(y => {
-      yMax = Math.max(y, yMax)
-    })
-    const dataShadow = []
-    for (let i = 0; i < data.length; i++) {
-      dataShadow.push(yMax)
+    const { data, dataAxis } = parseDataBinding(dataBinding);
+    if (!data.length) {
+      return {
+        option: {
+          title: {
+            text: 'No data available'
+          }
+        },
+        data: [],
+        dataAxis: []
+      };
     }
+
+    let yMax = 0;
+    data.forEach(y => {
+      yMax = Math.max(y || 0, yMax);
+    });
+    const dataShadow = Array(data.length).fill(yMax);
+
     const option = {
       title: {
         text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
@@ -118,9 +150,9 @@ var getScriptPromisify = (src) => {
           data: data
         }
       ]
-    }
-    return { option, data, dataAxis }
-  }
+    };
+    return { option, data, dataAxis };
+  };
 
   const template = document.createElement('template')
   template.innerHTML = `
