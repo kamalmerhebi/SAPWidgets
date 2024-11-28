@@ -1,0 +1,55 @@
+{
+  "eula": "",
+  "vendor": "InsightCubes",
+  "license": "",
+  "id": "InsightCubes.wordcloud",
+  "icon": "sap-icon://text",
+  "version": "1.0.0",
+  "supportsMobile": true,
+  "name": "Word Cloud",
+  "newInstancePrefix": "WordCloud",
+  "description": "Word cloud visualization widget",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "insightcubes-wordcloud",
+      "url": "https://insightcubes.com/sacwidgets/SAPWidgets/wordCloud/wordCloudMain.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    },
+    {
+      "kind": "builder",
+      "tag": "insightcubes-wordcloud-builder",
+      "url": "https://insightcubes.com/sacwidgets/SAPWidgets/wordCloud/builder.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "width": {
+      "type": "integer",
+      "default": 600
+    },
+    "height": {
+      "type": "integer",
+      "default": 320
+    },
+    "text": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "setText": {
+      "description": "",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "description": ""
+        }
+      ],
+      "body": "this.text = value;"
+    }
+  },
+  "events": {}
+}

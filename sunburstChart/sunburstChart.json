@@ -1,0 +1,74 @@
+{
+  "eula": "",
+  "vendor": "InsightCubes",
+  "license": "",
+  "id": "InsightCubes.sunburstchart",
+  "icon": "",
+  "version": "1.0.0",
+  "supportsMobile": true,
+  "supportsBookmark": true,
+  "supportsExport": true,
+  "supportsLinkedAnalysisFilterOnSelection": true,
+  "name": "Sunburst Chart",
+  "newInstancePrefix": "SunburstChart",
+  "description": "Sunburst chart visualization widget",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "insightcubes-sunburstchart",
+      "url": "https://insightcubes.com/sacwidgets/SAPWidgets/sunburstChart/sunburstChartMain.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    },
+    {
+      "kind": "styling",
+      "tag": "insightcubes-sunburstchart-styling",
+      "url": "https://insightcubes.com/sacwidgets/SAPWidgets/sunburstChart/sunburstChartStyling.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "width": {
+      "type": "integer",
+      "default": 600
+    },
+    "height": {
+      "type": "integer",
+      "default": 320
+    },
+    "drillUpArea": {
+      "type": "string",
+      "default": "#ffffff"
+    },
+    "stops": {
+      "type": "string[]",
+      "default": ["#0070F2", "#4CB1FF", "#A6E0FF", "#D2EFFF", "#0057D2"]
+    },
+    "showAll": {
+      "type": "boolean",
+      "default": false
+    },
+    "labelAll": {
+      "type": "string"
+    }
+  },
+  "methods": {},
+  "events": {},
+  "dataBindings": {
+    "dataBinding": {
+      "feeds": [
+        {
+          "id": "dimensions",
+          "description": "Dimensions",
+          "type": "dimension"
+        },
+        {
+          "id": "measures",
+          "description": "Measures",
+          "type": "mainStructureMember"
+        }
+      ]
+    }
+  }
+}

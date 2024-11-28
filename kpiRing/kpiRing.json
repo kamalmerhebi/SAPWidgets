@@ -1,0 +1,48 @@
+{
+  "eula": "",
+  "vendor": "InsightCubes",
+  "license": "",
+  "id": "InsightCubes.kpiring",
+  "icon": "sap-icon://kpi-corporate-performance",
+  "version": "1.0.0",
+  "name": "KPI Ring",
+  "newInstancePrefix": "KPIRing",
+  "description": "KPI ring visualization widget",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "insightcubes-kpiring",
+      "url": "https://insightcubes.com/sacwidgets/SAPWidgets/kpiRing/kpiRingMain.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+    "width": {
+      "type": "integer",
+      "default": 600
+    },
+    "height": {
+      "type": "integer",
+      "default": 420
+    }
+  },
+  "dataBindings": {
+    "myDataSource": {
+      "feeds": [
+        {
+          "id": "dimensions",
+          "description": "Dimensions",
+          "type": "dimension"
+        },
+        {
+          "id": "measures",
+          "description": "Measures",
+          "type": "mainStructureMember"
+        }
+      ]
+    }
+  },
+  "methods": {},
+  "events": {}
+}
