@@ -40,7 +40,7 @@
       "returnType": "string",
       "description": "Get chart option",
       "parameters": [],
-      "body": "return this.option;"
+      "body": "return JSON.stringify(this._props);"
     }
   },
   "events": {},

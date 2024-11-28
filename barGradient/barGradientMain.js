@@ -123,7 +123,6 @@ var getScriptPromisify = (src) => {
       this._root = this._shadowRoot.getElementById('root')
       this._myChart = null
       this._props = {}
-      this.option = ''
 
       this.render()
     }
@@ -137,7 +136,6 @@ var getScriptPromisify = (src) => {
       
       const option = createChartOption(this._props.dataBinding)
       this._myChart.setOption(option)
-      this.option = JSON.stringify(option)
     }
 
     onCustomWidgetResize (width, height) {
@@ -155,7 +153,6 @@ var getScriptPromisify = (src) => {
 
       const option = createChartOption(this._props.dataBinding)
       this._myChart.setOption(option)
-      this.option = JSON.stringify(option)
     }
   }
 
