@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4] - 2024-01-09
+
+### Changed
+- Updated widget namespace from SAP to InsightCubes
+- Changed widget ID to insightcubes.echarts.bargradientbinding
+- Updated webcomponent tag to match new namespace
+- Modified custom element definition to align with new naming
+
 ## [1.0.3] - 2024-01-09
 
 ### Added

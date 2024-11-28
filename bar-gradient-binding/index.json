@@ -1,20 +1,20 @@
 {
   "eula": "",
-  "vendor": "SAP",
+  "vendor": "InsightCubes",
   "license": "",
-  "id": "com.sap.sac.sample.echarts.bargradientbinding",
+  "id": "insightcubes.echarts.bargradientbinding",
   "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABACAYAAABP97SyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwUlEQVRoge3XwQ3CMAxGYRsxDXCDgWANFugYTMStmccsQMnBRO4fve8aRc1TI1kxA1DJqw/Qc70vzd1O39bCor1fz8uv/Ycxx/qfrTgzMzc/9/bvPjCLQHUEqiNQHYHqCFRHoLrpA4+jP5B9z2UN/4PZ91zW9FeUQHUEqps+sDsHq+dYVvcPVs+xrOmvKIHqCFRHoDoC1RGojkB1BKojUB2B6ghU1w0Mi7a5FrbufT+AWn57LFF9iJEYE+qmDwRQ6wO/gymA985iUgAAAABJRU5ErkJggg==",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "supportsMobile": true,
   "supportsExport": true,
-  "name": "ECharts Bar Gradient",
-  "newInstancePrefix": "EChartsBarGradient",
-  "description": "Bar chart with gradient colors and zoom functionality",
+  "name": "ECharts Bar Gradient Binding",
+  "newInstancePrefix": "EChartsBarGradientBinding",
+  "description": "ECharts Bar Gradient with Data Binding",
   "webcomponents": [
     {
       "kind": "main",
-      "tag": "com-sap-sample-echarts-bar-gradient-binding",
-      "url": "https://cdn.jsdelivr.net/gh/kamalmerhebi/SAPWidgets@main/bar-gradient-binding/main.js",
+      "tag": "insightcubes-echarts-bargradientbinding",
+      "url": "main.js",
       "integrity": "",
       "ignoreIntegrity": true
     }

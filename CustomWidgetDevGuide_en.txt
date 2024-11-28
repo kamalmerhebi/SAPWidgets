@@ -1,0 +1,4084 @@
+PUBLIC
+Document Version: 2024.21 — 2024-11-14
+
+SAP Analytics Cloud Custom Widget Developer
+Guide
+
+served.
+
+SAP affiliate company. All rights re:
+
+© 2024 SAP SE or an
+
+THE BEST RUN SAP4
+Content
+
+5.1
+5.2
+5.3
+5.4
+
+6.1
+6.2
+
+6.3
+6.4
+
+71
+72
+73
+74
+
+10
+
+11
+
+12
+12.1
+12.2
+
+2
+
+Introduction. 2.0.0... ee eee eee eee eee eee eee 4
+Web Components... ...... 000. e eee eee 5
+Restrictions. . 0.0... 00 eee eee eee eee eee 6
+Hosting Custom Widgets. ... 0.00000 eee eee 9
+Quickstart - Creating a New Custom Widget. .... 0.2.0.0 00 eee 11
+Getting aSample Custom Widget... ee i
+Modifying the Sample Custom Widget... 00. ee 12
+Uploading a Custom Widget to Analytics Designer... ee 13
+Removing the Custom Widget from Analytics Designer... 0... ee 14
+Custom Widgets... 1.0.0.0 cc eee 16
+Custom Widget JSON Reference. 0... ee 16
+Web Component JavaScript... 0 ee 30
+
+Using Script API Data Types in JavaScript Functions... 0... ee 38
+
+Importing Script API Data Types with Type Libraries... 0... ee 39
+
+Using Data Bindings. 6... ee 39
+Styling Panel... ee 41
+Builder Panel. 0. ee 42
+A Sample Custom Widget: Colored Box... ... 0.0000 cee ee 43
+Custom Widget JSON. 0.0. ee 43
+Web Component JavaScript. 6.0 eee 47
+Web Component JavaScript of the Styling Panel... 6... ee 51
+Web Component JavaScript of the Builder Panel... 0.0... ee 55
+Custom Widgets on Mobile Devices. .......... 00 cee eee 60
+Exporting Custom Widgets. ... 2.0.0.0 0 ce eee 62
+Enabling Linked Analysis for Your Custom Widget (Optimized Story Experience)........... 64
+
+Configuring Bookmark Support for Your Custom Widget (Optimized Story Experience)
+
+ee eee 66
+Best Practices... 0.2... eee eee eee eens 68
+Dispatching a Property Change. 2... ee 68
+Calling Methods of Passed Objects of Script API Types... 00. ee 69
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+PUBLIC Content
+12.3. Implementing Property Setter and Getter Methods Consistently....... 0.0.0.0... 00.00.0000 s 70
+12.4 Returning Arguments by Value and by Reference... 0... ee 72
+12.5 Custom Types. ee 73
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Content PUBLIC 3
+1 Introduction
+
+The SAP Analytics Cloud Custom Widget framework lets you extend the predefined set of widgets provided by
+analytics designer with your own custom widgets.
+
+This is very useful, for example, if you need a specific user interface element, a particular visualization of data,
+or acertain functionality in your analytic application that is not provided by the predefined set of widgets.
+
+Custom widgets seamlessly integrate into SAP Analytics Cloud, analytics designer. Like any other predefined
+widget, a custom widget provides the following capabilities:
+
+*  Itis listed in the widget menu list from where you can add it to the canvas.
+° |tcan be moved and resized on the canvas.
+
+* |t appears in the widget outline.
+
+* |tcan contribute script methods to the analytics designer script language.
+
+* |tcan provide areas in analytics designer where you can set property values of the custom widget at design
+time (Styling Panel and Builder Panel).
+
+Custom widgets are technically a simple set of files. The most basic custom widget consists of simply a JSON
+file and a JavaScript file. More complex custom widgets add more files to this (JavaScript files, CSS files,
+images, and so on).
+
+To create custom widgets, you don’t need special software. At the beginning, a simple text editor will
+do. However, when your custom widgets get more complex, a good JavaScript text editor will make your
+development efforts easier.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+4 PUBLIC Introduction
+2 Web Components
+
+Custom widgets are implemented as Web Components.
+
+The basic idea of Web Components is to provide custom HTML elements (so-called custom elements) in the
+HTML DOM (Document Object Model) of a web page that do not interfere with the rest of the HTML DOM.
+
+In fact, rendering and styling of custom elements is strictly isolated from the remaining HTML DOM. This is
+achieved by separating a custom element’s HTML DOM from the HTML DOM of the web page in a shadow
+DOM.
+
+Web Components are made of HTML, CSS (optional), and JavaScript.
+
+This document doesn't assume any prior knowledge of Web Components. It explains the relevant ideas and
+details of Web Components in the text, along with sample code.
+
+For more information on Web Components, see the Mozilla MDN web docs on Web Components.
+
+@ Note
+
+The sample code in this document is based on ECMAScript 2015.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Web Components PUBLIC
+
+5
+3 ~=Restrictions
+
+Learn about the restrictions in custom widgets.
+
+Browser
+
+Currently, custom widgets work in Google Chrome and Microsoft Edge (version 79 and higher) only.
+
+Unsupported Features
+
+Currently in both SAP Analytics Cloud, analytics designer and Optimized Story Experience, the following
+features aren't supported for custom widgets:
+
+Theme and CSS
+Pause refresh
+Viewport loading
+Data blending
+Commenting
+Scheduling
+Translation
+
+Data Change Insights
+Search to Insight
+
+Additionally in SAP Analytics Cloud, analytics designer, linked analysis and bookmark aren't supported.
+
+@ Note
+
+Now in Optimized Story Experience, linked analysis and bookmark are supported for custom widgets.
+
+In specific cases, you need to do further actions to enable linked analysis. For more information, refer to
+Enabling Linked Analysis for Your Custom Widget (Optimized Story Experience) [page 64].
+
+To enable bookmark for your custom widget, you need to do further actions in its JSON file. For more
+information, refer to Configuring Bookmark Support for Your Custom Widget (Optimized Story Experience)
+[page 66].
+
+Export
+
+6
+
+Filters on custom widgets won't show up in the appendix of PDF export.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+PUBLIC Restrictions
+* If your custom widgets use images from remote servers, there may be cross-domain errors during PDF
+export. To resolve, allow cross-domain access for the remote servers.
+
+Transport
+
+For a custom widget whose resource files are hosted by SAP Analytics Cloud, after transporting it or an
+optimized story or analytic application containing it to another tenant, you need to upload the custom widget
+there.
+
+Hosting
+
+It isn't yet supported to host the resource files on SAP Analytics Cloud tenants based on SAP Neo platform.
+
+CORS
+
+Custom widgets run in browsers, following the same-origin policy and CORS mechanism. When a custom
+widget needs to fetch data such as XMLHttpRequest or web fonts via cross-origin HTTP requests, it’s
+necessary to correctly set the HTTP header to comply with the CORS mechanism and avoid CORS errors,
+for example, Access—Control-Allow-—Origin: *.
+
+Data Binding
+
+Note the following restrictions if you want to add data binding to your custom widget.
+In both SAP Analytics Cloud, analytics designer and Optimized Story Experience:
+* Inthe Builder panel of the custom widget, some actions in that of a chart or table aren't yet available, such
+as:
+* Color section
+* Chart Add-Ons section
+* Chart Properties section
+* Rename on dimensions
+* Rename and Display As on measures or accounts
+* Add Dimension Input Control
+* Add Measure Input Control or Add Account Input Control!
+* (For SAP BW models) Choosing hierarchy level
+* Show only leaves in widget in dimension hierarchy settings
+
+* These APIs aren't supported for custom widgets with data binding:
+getDataSource ().getComments, getDataSource () .load, getDataSource () .getDataExplorer
+
+getDataSource ().getDataSelections.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Restrictions PUBLIC 7
+* When a model has both measures and accounts, the following APIs only apply to accounts:
+DataBinding.getMembers, DataBinding. addMemberToFeed and DataBinding. removeMember.
+
+In SAP Analytics Cloud, analytics designer only:
+
+* Universal account models aren't supported for data binding.
+
+* Custom widgets with data binding are only supported in optimized view mode.
+* Showing unbooked data isn’t supported.
+
+° Filter lines won't apply to custom widgets either at design time or runtime.
+
+* Custom widgets won't be affected by value selection changes in input controls at design time, while input
+controls work on them at runtime.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+8 PUBLIC Restrictions
+4 Hosting Custom Widgets
+
+From a hosting point of view, a custom widget consists of two types of files: the custom widget JSON file
+(explained in more detail in a later section) and the resource files.
+
+The custom widget JSON file contains the metadata of a custom widget. It defines all the ingredients of
+
+a custom widget and references its resource files by their URLs. You need to upload the JSON file of your
+custom widget to SAP Analytics Cloud. For more information, refer to Uploading a Custom Widget to Analytics
+Designer [page 13].
+
+The resource files are all the files of the custom widget that make it work properly, for example, JavaScript files,
+CSS files, HTML files, image files, and so on.
+
+You can upload and host the resource files of your custom widget in either your own web server or SAP
+Analytics Cloud:
+
+Your own HTTP Web server with HTTPS enabled.
+
+The Web server acts as a simple repository of the resource files. The resource files are static, they aren't
+processed or executed on the Web server. Recall that the custom widget JSON contains URL references
+that point to these resource files.
+
+When a custom widget is rendered in a Web browser, the Custom Widget framework passes the URL of a
+resource file referenced in the custom widget JSON to the browser. The browser requests that resource
+file from the Web server. The Custom Widget framework poses no specific demands on the Web server
+
+in so far as a resource file should simply be served to any browser that requests the resource file by
+
+the appropriate URL. The Custom Widget framework doesn’t provide any authentication or authorization
+capabilities, session cookie support, and so on.
+
+The resource files of a custom widget are requested from the Web server both when an analytic
+application or optimized story containing this custom widget is created (design time) and when the
+analytic application or optimized story containing this custom widget is viewed in the browser (runtime).
+Of course, any resource file related to the Builder and Styling Panel of a custom widget is requested only at
+design time.
+
+The Web server can be either a public or a private (that is, company internal) Web server, as long as it
+serves the resource files as requested from a browser by the appropriate URL. A private Web server can
+be reached only from within the company and is useful for internal development of custom widgets. For
+internal development, you can run, for example, an Apache Web server or a node.js server with the module
+“http-server” on your local development system.
+
+@ Note
+
+* The SAP Analytics Cloud instance never connects to the Web server to request resource files. It is
+always the browser that requests resource files.
+
+* When you save an analytic application or optimized story on the SAP Analytics Cloud instance,
+only a reference to the custom widget is saved with the analytic application or optimized story.
+Specifically, it is a reference to the custom widget JSON of the custom widget on the SAP Analytics
+Cloud instance. Analytic applications or optimized stories never store resource files of custom
+widgets with them.
+
+SAP Analytics Cloud.
+To upload the resource files to SAP Analytics Cloud, you need to:
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Hosting Custom Widgets PUBLIC 9
+lo
+
+In the JSON file, specify the file name beginning with a forward slash.
+
+t+ Sample Code
+
+"webcomponents": [
+{
+"kind": "main",
+"tag": "“com-sap-sample—coloredbox",
+"url": "/coloredbox_main.js",
+"integrity": "",
+
+"ignoreIntegrity": true
+
+"kind": "styling",
+
+"tag": "“com-sap-sample-—coloredbox-styling",
+"url": "/coloredbox_styling.is",
+"integrity": "",
+
+"ignoreIntegrity": true
+
+"kind": "builder",
+
+"tag": "“com-sap-sample—coloredbox—builder",
+"url": "/coloredbox_builder.js",
+"integrity": "",
+
+"ignoreIntegrity": true
+
+ly
+
+Compress your resource files to a ZIP file.
+
+Then, after uploading the JSON file on SAP Analytics Cloud, a button Select File appears for you to upload
+your ZIP file.
+
+> Remember
+
+Keep the following in mind when you upload the resource files:
+
+Ensure that you have the Create permission for Custom Widget.
+The file name extension of the compressed file should be .zip.
+The ZIP file should be no larger than 10 MB.
+
+The ZIP file only supports the following resources files: Web Component JavaScript, Web
+Component JavaScript of the Styling Panel, Web Component JavaScript of the Builder Panel, and
+icon. CSS and HTML files are not supported.
+
+Icon only supports PNG or JPG file.
+
+Subfolders in the ZIP file are not supported.
+
+At most 50 custom widgets with resources hosted by SAP are allowed on each tenant.
+
+A Restriction
+
+It isn't yet supported to host the resource files on SAP Analytics Cloud tenants based on SAP Neo
+platform.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+PUBLIC Hosting Custom Widgets
+5 Quickstart - Creating a New Custom
+Widget
+
+To create your own custom widget, copy a simple sample custom widget, modify it, and add it to the analytics
+designer.
+
+Prerequisites
+
+You need a web server that hosts the resources of your custom widget (JavaScript files, CSS files, images,
+and so on) (see chapter Hosting Custom Widgets [ page 9] for more information). In the samples below, let's
+assume that your custom widget resources are hosted on:
+
+& Example
+
+https:/Avww.sample.com/customwidgets
+
+5.1 Getting a Sample Custom Widget
+
+To create a simple sample custom widget as a starting point, create a folder coloredbox and place the
+following files into it:
+
+* coloredbox. json (find the source code in chapter Custom Widget JSON [page 43])
+* coloredbox. js (find the source code in chapter Web Component JavaScript [page 47])
+
+* coloredbox_styling. js (find the source code in chapter Web Component JavaScript of the Styling
+Panel [page 51])
+
+* coloredbox_builder. js (find the source code in chapter Web Component JavaScript of the Builder
+Panel [page 55])
+
+* icon.png (any 16 x 16 pixel icon will do)
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Quickstart - Creating a New Custom Widget PUBLIC ll
+5.2 Modifying the Sample Custom Widget
+
+Modify the sample Colored Box custom widget to the Box custom widget in the following steps:
+
+Procedure
+
+1.
+2.
+
+Rename the file coloredbox. json to box. json.
+
+In the file box. json, edit the following property values:
+
+JSON Property Name
+
+Old JSON Property Value
+
+New JSON Property Value
+
+id "com.sap.sample.coloredbo "com.sample.box"”
+x“
+
+name "Colored Box" "Box"
+
+newlnstancePrefix "ColoredBox"” "Box"
+
+icon "https://.../icon.png" "https://www.sample.com/
+customwidgets/box/
+icon.png"”
+vendor "SAP" "Sample"
+tag "“com—-sap-—sample— "com—-sample-box"
+coloredbox"
+url "https://.../ "https://www.sample.com/
+coloredbox. js" customwidgets/box/box.js"
+tag "com—sap—sample— "com—-sample—-box-styling"”
+coloredbox-styling"
+url "https://.../ "https://www.sample.com/
+coloredbox_styling.js"” customwidget s/box/
+box_styling.js"
+tag "“com—-sap-—sample— "com-sample-box—builder"”
+coloredbox—builder"
+url "https://.../ "https://www.sample.com/
+coloredbox_builder.js" customwidgets/box/
+box_builder.js"”
+description "Called when the user "Called when the user
+
+clicks the Colored Box."
+
+clicks the Box.”
+
+3. Rename the file coloredbox. js to box. js
+
+4.
+
+12
+
+In the file box. js, edit the following locations:
+
+PUBLIC
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+Quickstart - Creating a New Custom Widget
+Old Text New Text
+
+class ColoredBox extends class Box extends
+customElements.define("com-sap-sample- customElements.define ("com—-sample—-box",
+coloredbox", ColoredBox) ; Box);
+
+5. Rename the file coloredbox_styling. js to box_styling. js.
+
+6. Inthe filebox_styling. js, rename the following locations:
+
+Old Text New Text
+
+<legend>Colored Box Properties</legend> <legend>Box Properties</legend>
+
+class ColoredBoxStylingPanel extends class BoxStylingPanel extends
+customElements.define("com-sap-sample- customElements.define ("com—-sample—box—
+coloredbox-styling", styling", BoxStylingPanel);
+
+ColoredBoxStylingPanel) ;
+
+7. Rename the file coloredbox_builder.js to box_builder. js.
+
+8. Inthe file box_builder. 4s, rename the following locations:
+
+Old Text New Text
+
+<legend>Colored Box Properties</legend> <legend>Box Properties</legend>
+
+class ColoredBoxBuilderPanel extends class BoxBuilderPanel extends
+customElements.define("com-sap-sample- customElements.define ("com—-sample—box—
+coloredbox—builder", builder", BoxBuilderPanel) ;
+
+ColoredBoxBuilderPanel) ;
+
+9. Onyour web server, create a folder box which can be reached with this URL: https: //www.sample.com/
+customwidgets/box.
+
+10. Upload the files box. js, box_styling. js, box_builder.js and icon.png to your web server to folder
+https://www.sample.com/customwidgets/box.
+
+5.3. Uploading a Custom Widget to Analytics Designer
+
+Follow the steps to upload a custom widget to SAP Analytics Cloud, analytics designer so that you can use it as
+other widgets in your analytic application.
+
+Prerequisites
+
+To create and upload custom widgets, the Create permission for Custom Widget must be selected in the role
+that you are assigned.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Quickstart - Creating a New Custom Widget PUBLIC 13
+For more information, see https: //help.sap.com/docs/
+SAP_ANALYTICS_CLOUD/O0f68c2e08b941f081002fd3691d86a7/93fec5646f1446e109745ce/4fd492c3F. html
+and https://help.sap.com/docs/SAP_ANALYTICS_CLOUD/00f68c2e08b941f081002fd3691d86a7/
+e6lceO06c6bb2428eb649fb6ccha73c79. html.
+
+Procedure
+
+1. Onthe Analytic Applications start page, choose the Custom Widgets tab.
+
+2. Select + (Create).
+In the Upload File dialog, choose Select File.
+
+4. Select the custom widget file, for example box. json.
+
+Results
+
+When you want to insert the custom widget into your analytic application, you can find it via Ft yaaa)
+Custom Widgets.
+
+Next Steps
+
+Every custom widget has a version number in the format ma jorVersion.minorVersion.patchVersion
+defined in its original file, for example, 1.0.0. You can add different major versions of a custom widget to
+analytics designer at the same time, for example, versions 1.0.0 and2.0.0.
+
+However, when you add a custom widget that differs in minor version from the one present in analytics
+designer, it replaces the present one. For example, if a custom widget of version 1.5.0 is present in analytics
+designer, then adding either version1.4.00r1.6.0 replaces version1.5.0.
+
+5.4 Removing the Custom Widget from Analytics Designer
+
+To remove the custom widget from analytics designer, follow these steps:
+
+Procedure
+
+1. Navigate to|}* Main Menu » Browse » Custom Widgets
+
+SAP Analytics Cloud Custem Widget Developer Guide
+14 PUBLIC Quickstart - Creating a New Custom Widget
+2. Select Box.
+3. Click the Delete toolbar icon (trashcan).
+
+4. Confirm the deletion.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Quickstart - Creating a New Custom Widget PUBLIC 15
+6 Custom Widgets
+
+A custom widget consists of the following files:
+
+File Required/Optional Description
+
+Custom widget JSON Required Defines the custom widget
+
+Web Component JavaScript Required Implements the custom element of the
+custom widget (Web Component)
+
+Web Component JavaScript of Styling | Optional Implements the custom element of the
+
+Panel Styling Panel of the custom widget
+(Web Component)
+
+Web Component JavaScript of Builder Optional Implements the custom element of the
+
+Panel Builder Panel of the custom widget
+(Web Component)
+
+Icon Optional Represents the custom widget’s icon
+(16 x 16 pixels)
+
+More files... Optional More files (JavaScript, CSS, images,
+
+and so on) depending on the imple-
+mented custom widget
+
+The following sections explain these files in detail.
+
+6.1 Custom Widget JSON Reference
+
+The custom widget JSON file specifies the custom widget.
+
+The following sections explain the valid properties of the custom widget JSON. Any other properties present in
+a custom widget JSON render it invalid.
+
+Root Object
+
+The root object of the custom widget JSON specifies the custom widget. Its JSON properties are:
+
+Property Required/Optional Description
+id Required Unique ID of the custom
+widget, for example,
+"com.sap.sample.col
+oredbox"
+SAP Analytics Cloud Custem Widget Developer Guide
+16 PUBLIC Custom Widgets
+Property
+
+Required/Optional
+
+Type
+
+Description
+
+version
+
+Required
+
+String
+
+Version of the custom
+widget, for example,
+"1.0.0"
+
+name
+
+Required
+
+String
+
+Name of the custom widget,
+for example, "Colored
+Box"
+
+description
+
+Optional
+
+String
+
+Description of the custom
+widget, which is used, for ex-
+ample, in tooltips
+
+newInstancePrefix
+
+Required
+
+String
+
+Prefix of anew custom
+widget instance in analytics
+designer or optimized story
+experience, for example,
+"ColoredBox"
+
+icon
+
+Optional
+
+String
+
+URL of the custom widget’s
+icon (16 x 16 pixels).
+
+>Tip
+
+You can also use a Data-
+URL. A Data-URL lets
+you include a resource
+directly into the custom
+widget JSON that would
+
+be otherwise requested
+via the network.
+
+vendor
+
+Optional
+
+String
+
+Vendor string
+
+eula
+
+Optional
+
+String
+
+End-user license agreement
+text
+
+license
+
+Optional
+
+String
+
+License text
+
+webcomponents
+
+Required
+
+Array of Webcomponent ob-
+jects
+
+Web components of the cus-
+tom widget (see section be-
+low)
+
+properties
+
+Required
+
+Properties object
+
+Properties of the custom
+widget
+
+(see section below)
+
+methods
+
+Required
+
+Methods object
+
+Methods of the custom
+widget (see section below)
+
+events
+
+Required
+
+Events object
+
+Events of the custom widget
+(see section below)
+
+SAP Analytics Cloud Custom Widget Developer Guide
+
+Custom Widgets
+
+PUBLIC
+
+nv
+Property
+
+Required/Optional
+
+Type
+
+Description
+
+imports
+
+Optional
+
+Array of strings
+
+Type libraries used by the
+custom widget (see chapter
+Importing Script API Data
+Types with Type Libraries
+
+[page 39])
+
+support sMobile
+
+Optional
+
+Boolean
+
+Indicates whether the cus-
+tom widget is rendered on
+mobile devices.
+
+If false, then the custom
+widget is replaced in an ana-
+lytic application or optimized
+story on a mobile device by
+a placeholder with a mes-
+sage explaining that the cus-
+tom widget doesn’t run ona
+mobile device. See Custom
+Widgets on Mobile Devices
+[page 60] for more informa-
+tion.
+
+Possible values are:
+
+* true
+
+* false
+
+support sExport
+
+Optional
+
+Boolean
+
+Indicates whether the cus-
+tom widget supports PDF ex-
+port.
+
+supportsLinkedAnaly
+sisFilterOnSelectio
+n (Optimized Story Experi-
+ence)
+
+Optional
+
+Boolean
+
+Indicates whether the cus-
+tom widget supports linked
+analysis based on Filter on
+Data Point Selection. In addi-
+tion, within your Web Com-
+ponent JavaScript file, you
+need to use Data Binding's
+linked analysis APIs so that
+
+a selected data point from
+the custom widget can filter
+other widgets. For more in-
+formation, refer to Enabling
+Linked Analysis for Your Cus-
+tom Widget (Optimized Story
+Experience) [page 64].
+
+support sBookmark (Op-
+
+timized Story Experience)
+
+Optional
+
+Boolean
+
+Indicates whether the cus-
+tom widget supports book-
+mark. For more information,
+refer to Configuring Book-
+mark Support for Your Cus-
+tom Widget (Optimized Story
+Experience) [page 66].
+
+18 PUBLIC
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+Custom Widgets
+Property Required/Optional Type
+
+Description
+
+types Optional Types object
+
+Custom types of the custom
+widget. You can define your
+
+own data structures and enu-
+
+merations here (see section
+below).
+
+dat aBindings Optional DataBindings object
+
+Data bindings of the custom
+widget. You can define your
+
+own data bindings with an ar-
+
+ray of feed objects here (see
+section below).
+
+Webcomponent Object
+
+A Webcomponent object specifies one web component of a custom widget. Its JSON properties are:
+
+Property Required/Optional Type
+
+Description
+
+kind Required String
+
+What kind of component this
+Web Component represents.
+
+Possible values are:
+
+* "main" (the actual
+custom widget)
+
+* "styling" (the Styl
+ing Panel of the custom
+widget)
+
+* "builder" (the
+
+Builder Panel of the cus-
+
+tom widget)
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets
+
+PUBLIC
+
+19
+Property Required/Optional Type Description
+
+tag Required String Unique name of the custom
+element (its HTML tag name)
+of this Web Component.
+
+@® Note
+
+The unique name must
+contain at least one hy-
+phen (-) to differentiate
+a custom element from
+regular HTML elements.
+
+>Tip
+
+Take the custom widget
+ID and replace all dots (.)
+with hyphens (-) to cre-
+ate a unique name for
+the custom element. For
+example, turn the cus-
+tom widget ID
+"com.sap.sample.
+coloredbox" into the
+unique name "com—
+sap-sample—
+
+coloredbox"
+
+>Tip
+
+Append the major ver-
+sion number to the
+
+tag name, for example,
+"com-sap-—sample—
+coloredbox-1". This
+avoids confusion be-
+tween multiple versions
+of a custom widget that
+have been added side-
+by-side to analytics de-
+signer (see section Up-
+loading a Custom Widget
+to Analytics Designer
+[page 13]).
+
+url Required String URL to the Web Component
+JavaScript file
+
+SAP Analytics Cloud Custem Widget Developer Guide
+20 PUBLIC Custom Widgets
+Type
+
+Description
+
+String
+
+This property can help with
+the modularization of your
+JavaScript code.
+
+For more information, see
+the description of the type
+attribute with the value
+module in the Mozilla MDN
+webcocs on the script ele-
+ment.
+
+String
+
+String containing the hash
+value of the Web Component
+JavaScript file.
+
+The hash value has the for-
+mat "hashAlgorithm—
+hashValue", for example,
+"sha256—
+ih2Us20RAQ9CaW jbO/
+L£ZPetSX7gTrVilTtbdF
+6mk4io="
+
+Web browsers support sev-
+eral hash algorithms. For
+more information, see the
+Mozilla MDN web docs on
+Subresource Integrity.
+
+>Tip
+
+To quickly obtain a
+
+hash value add your
+custom widget to ana-
+lytics designer (setting
+the JSON property
+ignoreIntegrity to
+false). This operation
+fails, as expected, but
+the browser console lists
+the expected hash value.
+
+Property Required/Optional
+type Optional
+integrity Required
+ignoreIntegrity Optional
+
+Boolean
+
+Indicates whether to ignore
+the property integrity,
+for example, during develop-
+ment of a custom widget.
+
+Possible values are:
+
+* true
+
+* false
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets
+
+PUBLIC
+
+21
+Properties Object
+
+A Properties object specifies the properties of a custom widget. Each JSON property name of a Properties
+object is the name of a custom widget property. Its value is an object with the following JSON properties:
+
+Properties Required/Optional Type Description
+
+type Required String
+
+Type of the custom widget
+
+property.
+
+Possible values are, for exam-
+
+ple:
+
+"string"
+
+"number"
+"boolean"
+"integer"
+"string[]”
+"number []"
+"boolean[]"
+"integer[]”
+
+You can also use certain
+script API data types.
+For more information
+see section Using Script
+API Data Types in Java-
+Script Functions [page
+38].
+
+You can also use simple
+object types. For more
+information see section
+Simple Object Types.
+
+description Optional String Description of the custom
+widget property
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+22 PUBLIC
+
+Custom Widgets
+Properties Required/Optional Type Description
+
+default Optional Depending on type Default value of the custom
+widget property.
+Possible values are one of the
+following JavaScript types:
+
+* String, for example,
+
+“green”
+* Number, for example, 1
+
+* Boolean, for example,
+
+true
+
+* Anarray of string values,
+for example, ["red",
+"yellow",
+"green"]
+
+* An array of number val-
+ues, for example, [1,
+
+2, 3]
+
+* An array of Boolean
+values, for example,
+[true, false,
+
+true]
+
+@ Note
+
+When you modify a property that is an array in a script method (see section Methods Object), always
+reassign the modified array to the property after the modification operation.
+
+For example, your custom widget has a property list OfItems of type string[].To add a new item to
+this array in a script method, follow this pattern: Create a helper reference to the array, add the item, then
+reassign the helper reference to the array property, like this:
+
+"body": "var list = this.listOfItems; list.push(newltem); this.listOfItems =
+list;"
+Methods Object
+
+A Methods object specifies the script method of a custom widget. Each JSON property name of a Methods
+object is the name of a custom widget script method. Its value is an object with the following JSON properties:
+
+Properties Required/Optional Type Description
+description Required String Description of the script
+method
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 23
+Properties
+
+Required/Optional
+
+Type
+
+Description
+
+parameters
+
+Optional
+
+Array of Parameter objects
+
+Parameters of the script
+method (see section below).
+Omit this property if the
+script method has no param-
+eters.
+
+body
+
+Optional
+
+String
+
+Implementation of the script
+method expressed in the
+analytics designer script lan-
+guage.
+
+@® Note
+
+If you omit this property
+then the Custom Widget
+framework looks up and
+calls a JavaScript func-
+tion of this name (a so-
+called native JavaScript
+function) in the Web
+Component JavaScript
+file whose property
+kind has the value
+"main". If you change a
+custom widget property
+in a native JavaScript
+function, dispatch a
+"propertiesChang
+ed” custom event to no-
+tify the Custom Widget
+framework of the
+change. For a code ex-
+ample, see the section
+Implementing Property
+Setter and Getter Meth-
+ods Consistently [page
+70]. Otherwise this may
+lead to outdated prop-
+erty values when you re-
+trieve them ina script
+method.
+
+returnType
+
+Optional
+
+String
+
+Return type of the script
+method. Omit this property
+if the script method has no
+return value.
+
+24
+
+PUBLIC
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+Custom Widgets
+Parameter Object
+
+A Parameter object specifies one parameter of a script method of a custom widget. Its JSON properties are:
+
+Properties Required/Optional Type Description
+name Required String Name of the parameter
+type Required String Type of the parameter.
+
+Possible values are, for exam-
+ple:
+
+* "string"
+
+* "number"
+
+* "boolean"
+
+* "integer"
+
+* "string[]"
+
+* "number []"
+
+* "boolean[]"
+
+* "integer[]"
+
+* You can also use certain
+script API data types.
+For more information
+see chapter Using Script
+API Data Types in Java-
+Script Functions [page
+38].
+
+* You can also use simple
+object types. For more
+information see section
+Simple Object Types.
+
+description Optional String Description of the parameter
+
+Events Object
+
+An Events object specifies the events of a custom widget. Each JSON property name of an Events object is the
+name of a custom widget event. Its value is an object with the following JSON properties:
+
+Properties Required/Optional Type Description
+
+descripton Optional String Description of the event
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 25
+Types Object
+
+A Types object specifies the custom types of a custom widget. Custom types can be either custom data
+structures or custom enumerations. They can be used as types for properties, arguments and return types of
+methods inside the custom widget JSON. In the analytic application or optimized story you can use custom
+types for global variables, script object function arguments and return types.
+
+Each JSON property name of a Types object is the name of a custom type. Its value defines the custom type
+property, either a custom data structure or a custom enumeration.
+
+To avoid clashes of custom type names, internally each custom type name is made unique by using a qualified
+custom type name, which contains the custom widget ID. You don't need to specify the qualified custom type
+name in the types property section.
+
+@ Note
+
+When you're using custom type names in the Properties, Methods, and Parameter objects, they have
+precedence over built-in type names.
+
+For specifying a custom data structure, you can use the following JSON properties:
+
+Property Required/Optional Type Description
+
+description Optional String Description of the data struc-
+ture
+
+extends Optional String The data structure to ex-
+
+tend. You can extend your
+own custom data struc-
+tures, but not custom
+enumerations and simple
+types (string, number,
+integer, boolean).
+
+properties Required Array of Custom TypeProp- Properties of the data struc-
+erty objects ture (see section CustomTy-
+peProperty).
+
+For specifying a custom enumeration type, you can use the following JSON properties:
+
+Property Required/Optional Type Description
+description Optional String Description of the enumera-
+tion
+extends Required String Possible value:
+* "Enum"
+
+This marks the type as an
+enumeration.
+
+properties Required Array of CustomEnumValue Values of the enumeration
+objects (see section CustomEnum-
+Value).
+
+SAP Analytics Cloud Custem Widget Developer Guide
+26 PUBLIC Custom Widgets
+CustomTypeProperty
+
+A CustomTypeProperty object specifies one property of a custom type of a custom widget. Its JSON properties
+
+are:
+
+Property Required/Optional
+
+Type
+
+Description
+
+name Required
+
+String
+
+Name of the property
+
+description Optional
+
+String
+
+Description of the type
+
+type Required
+
+String
+
+The type of the property.
+This can be a simple
+type (string, number,
+
+integer, boolean), an
+
+enumeration, or a type that
+can be used as an argument
+type or as an object expres-
+
+sion.
+
+@® Note
+
+Types that can be used
+as argument types or as
+object expressions are
+
+identified in the analytics
+
+designer API Reference
+
+(search on the SAP Help
+
+Portal for SAP Analytics
+
+Cloud Analytics Designer
+
+API Reference Guide).
+
+Types that can be used
+as argument types are
+listed with a round sym-
+bol containing a “T”.
+
+Types that can be used
+as object expressions
+have the text can be
+
+passed as a JSON object
+
+to method arguments at
+the top of their class
+documentation.
+
+mandatory Optional
+
+Boolean
+
+Defines this property as
+
+mandatory. You must specify
+
+this property when creating
+
+instances of this type.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets
+
+PUBLIC
+
+27
+CustomEnumValue
+
+A CustomEnum Value object specifies one value of a custom enumeration type of a custom widget. Its JSON
+properties are:
+
+Property Required/Optional Type Description
+
+name Required String Name of the enumeration
+value
+
+description Optional String Description of the enumera-
+tion value
+
+DataBindings Object
+
+You can specify the data binding of your custom widget in the dat aBindings property. You can define only
+one object, and only the first one will be used if you define multiple objects.
+
+The keys of the dat aBindings property represent the name of the object.
+
+Property Required/Optional Type Description
+
+feeds Required Array of Feed objects Feeds of DataBindings (see
+section below)
+
+Also a default Builder panel will be available in design time if you define a DataBindings object in the JSON file.
+If you've specified your own Builder panel via the Webcomponent object, this automatically generated panel
+won't be used.
+
+Feed Object
+
+Property Required/Optional Type Description
+
+id Required String Unique ID of the feed
+
+type Required String "dimension" or
+"mainStructureMembe
+x" (also known as measure)
+as "type". The type defines
+what you can add to the ac-
+cording feed.
+
+description Optional String Description of the feed
+
+SAP Analytics Cloud Custem Widget Developer Guide
+28 PUBLIC Custom Widgets
+Simple Object Types
+
+In addition to simple types (string, number, integer, boolean), script API data types, custom types and
+arrays of these types, you can also specify a simple object type using the form Ob ject <type>.
+
+This type represents a JavaScript object with keys of type st ring and values of type<t ype>. For example, the
+type Ob ject <string> represents a JavaScript object with keys of type st ring and values of type st ring.
+
+Supported type<type>:
+
+* simple types (string, number, integer, boolean)
+
+* custom types
+
+The following example shows how to use an object of type Ob ject<number>, which represents a JavaScript
+object with keys of type st ring and values of type number:
+
+Custom Widget JSON
+
+«+ Sample Code
+
+"properties": {
+
+"myNumbers": {
+"type": "Object<number>",
+"description": "A collection of number object”
+
+}
+
+\y
+
+"methods": {
+"putNumber": {
+
+"parameters": [
+{"name": "name", "type": "string"},
+{"name": "value", "type": "number"}
+],
+"description": "Adds a number, using a name, to the collection.”
+
+\y
+"getNumber": {
+
+"parameters": [
+{"name": "name", "type": "string"}
+],
+"returnType": "number",
+"description": "Returns a number, using a name, from the
+
+collection.”
+}
+}
+
+Web Component JavaScript
+«+ Sample Code
+
+putNumber (name, value) {
+this.myNumbers = this.myNumbers || {};
+this.myNumbers[name] = value;
+
+}
+
+getNumber (name) {
+return this.myNumbers [name] ;
+
+}
+
+Sample Analytics Designer Script
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 29
+«+ Sample Code
+
+var numberl ig
+
+var number2 2;
+customWidget.put ("nl", numberl);
+customWidget.put ("n2", number2);
+var n = customWidget.get ("n2");
+
+6.2 Web Component JavaScript
+
+A custom widget is composed of one or more Web Components.
+
+Each Web Component is implemented in a Web Component JavaScript file, which defines and registers a
+custom element and implements the custom element's JavaScript API.
+
+For an example, see the section below that explains the Web Component JavaScript of the sample custom
+widget Colored Box.
+
+Web Component Lifecycle
+
+During the lifetime of a custom widget, the Custom Widget framework calls specific JavaScript functions of the
+Web Component in a defined order. You can implement these JavaScript functions to control the behavior of
+the custom widget. See the next section for a detailed explanation of each of these functions.
+
+When the custom widget is rendered for the first time, the Custom Widget framework calls the following
+sequence of JavaScript function on the custom widget:
+
+constructor ()
+
+onCustomWidgetBeforeUpdate ()
+
+Property setter functions, if present, to update the custom widget properties
+onCustomWidgetAfterUpdate ()
+
+ak WN
+
+connectedCallback ()
+
+When the custom widget is updated, the Custom Widget framework executes the following sequence of
+JavaScript function calls on the custom widget:
+
+l. onCustomWidget BeforeUpdate ()
+2. Property setter functions, if present, to update the custom widget properties
+3. onCustomWidgetAfterUpdate ()
+
+When the custom widget is removed from the canvas or the analytic application is closed, the Custom Widget
+framework executes the following sequence of JavaScript function calls on the custom widget:
+
+l. onCustomWidgetDestroy ()
+2. disconnectedCallback ()
+
+SAP Analytics Cloud Custem Widget Developer Guide
+30 PUBLIC Custom Widgets
+@ Note
+
+Function onCustomWidget Dest roy is not called on custom widgets when their visibility is set to false.
+It is also not called when custom widgets are an invisible part of a container, for example, when in the
+non-visible Tab of a TabStrip.
+
+When the custom widget is resized on the canvas, the Custom Widget framework executes the following
+JavaScript function call on the custom widget:
+
+1. onCustomWidget Resize ()
+
+@ Note
+Dragging the Custom Widget on the Canvas:
+
+At design time, when you are about to drag a custom widget on the canvas of analytics designer, the
+custom widget is cloned to provide you an object to drag. Thus, the constructor of the custom widget is
+called, as well as the connect edCallback and disconnectedCallback callbacks.
+
+Web Component JavaScript API
+
+The following table lists the JavaScript API of a Web Component of a custom widget.
+
+Function Syntax Description
+
+constructor constructor () You can implement this function to ex-
+ecute JavaScript code when the Web
+Component is initialized, for example,
+when the custom widget is added to
+the canvas or the analytic application is
+opened.
+
+This function is the counterpart of
+
+onCustomComponentDestroy.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 31
+Function
+
+Syntax
+
+Description
+
+onCustomWidgetBeforeUpdate
+
+onCustomWidgetBeforeUpdat
+e (oChangedProperties)
+
+You can implement this function to exe-
+cute JavaScript code before the proper-
+ties of the custom widget are updated.
+
+The argument
+oChangedProperties isa Java-
+Script object containing the changed
+properties as key-value pairs. The key
+is the name of the property, the value is
+the changed value of the property.
+
+When this function is called for the very
+first time by the Custom Widget frame-
+work, the full list of properties is passed
+in oChangedProperties. The prop-
+erty value of a property is the default
+value if defined in the custom widget
+JSON or undef ined otherwise.
+>Tip
+For Web Components that imple-
+ment the actual custom widget
+(with a value of kind="main" in
+the custom widget JSON), some
+more build-in properties are passed
+in oChangedProperties in the
+very first call, in addition to the
+
+properties defined in the custom
+widget JSON:
+
+Descrip-
+Property Type tion
+
+widget _ string Name of
+
+Name the
+widget
+
+design Boolean
+
+Mode
+
+Indicates
+whether
+the cus-
+tom
+widget
+currently
+runs in
+the ana-
+lytics de-
+signer.
+
+32 PUBLIC
+
+SAP Analytics Cloud Custem Widget Developer Guide
+Custom Widgets
+Function Syntax Description
+
+Descrip-
+Property Type tion
+
+Possible
+values
+are:ol
+
+tru
+e
+
+* fal
+
+sé
+
+Boolean Indicates
+
+Event
+
+name, for whether
+
+example, this event
+
+onClic of the
+
+k custom
+widget
+has cur-
+rently an
+event
+script as-
+signed.
+
+Possible
+values
+are:
+
+tru
+
+* fal
+
+sé
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 33
+Function
+
+Syntax
+
+Description
+
+onCustomWidgetAfterUpdate
+
+onCustomWidgetAfterUpdate (
+oChangedProperties)
+
+You can implement this function to ex-
+ecute JavaScript code after the proper-
+ties of the custom widget have been up-
+dated.
+
+The argument
+oChangedProperties isa Java-
+Script object containing the changed
+properties as key-value pairs. The key
+is the name of the property, the value is
+the changed value of the property.
+
+When this function is called for the very
+first time by the Custom Widget frame-
+work, the full list of properties is passed
+in oChangedProperties. The prop-
+erty value of a property is the default
+value if defined in the custom widget
+JSON or undefined otherwise.
+
+34 PUBLIC
+
+SAP Analytics Cloud Custem Widget Developer Guide
+Custom Widgets
+Function
+
+Syntax
+
+Description
+
+connectedCallback
+
+connectedCallback ()
+
+You can implement this function to ex-
+ecute JavaScript code when this Web
+Component of the custom widget is
+connected to the HTML DOM of the
+web page. This happens, for example,
+in the following situations:
+
+* at design time and runtime, when
+the custom widget is rendered for
+the first time
+
+* at design time, when you draga
+custom widget on the canvas. The
+custom widget is cloned to provide
+an object to drag.
+
+* at design time, when you movea
+custom widget from one container
+to another, for example, froma tab
+strip to a panel or from one tab of a
+tab strip to another tab
+
+* atruntime, when you move a
+custom widget from one con-
+tainer to another by using the
+analytics designer script method
+
+Widget .moveWidget ()
+>Tip
+
+It's good practice to implement
+this function such that it may
+
+be called by the framework at
+any time, restoring the state of
+the custom widget. For simple cus-
+tom widgets without much state
+data, it may be sufficient to recre-
+ate the custom widget just from
+scratch. See also the section on
+disconnectedCallback ()
+below.
+
+onCustomWidgetDest roy
+
+onCustomWidgetDest roy ()
+
+You can implement this function to exe-
+cute JavaScript code when the custom
+widget is destroyed, for example, when
+
+the custom widget is removed from the
+canvas or the analytic application con-
+
+taining the custom widget is closed.
+
+This function is the counterpart of
+
+constructor ().
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets
+
+PUBLIC 35
+Function
+
+Syntax
+
+Description
+
+disconnectedCallback
+
+disconnectedCallback ()
+
+You can implement this function to ex-
+ecute JavaScript code when this Web
+Component of the custom widget is cis-
+connected from the HTML DOM of the
+web page. This happens, for example, in
+the following situations:
+
+at design time and runtime, when
+you close the application
+
+at design time, when you remove a
+custom widget from the canvas
+
+at design time, when you drag a
+custom widget on the canvas. The
+custom widget is cloned to provide
+an object to drag.
+
+at design time, when you move a
+custom widget from one container
+to another, for example, froma tab
+strip to a panel or from one tab of a
+tab strip to another tab
+
+at runtime, when you move a
+custom widget from one con-
+tainer to another by using the
+analytics designer script method
+
+Widget .moveWidget ()
+>Tip
+
+It's good practice to implement
+this function such that it may
+
+be called by the framework at
+
+any time, saving the state of
+
+the custom widget — unless the
+custom widget is removed perma-
+nently. For simple custom widg-
+ets without much state data, sav-
+ing their state may not be nec-
+essary. See also the section on
+
+connectedCallback () above.
+
+36
+
+PUBLIC
+
+SAP Analytics Cloud Custem Widget Developer Guide
+
+Custom Widgets
+Function Syntax Description
+
+onCustomWidgetResize onCustomWidgetResize (width
+, height)
+
+You can implement this function to exe-
+cute JavaScript code when the custom
+widget is resized.
+
+The argument width is the new width
+
+of the custom widget in pixels.
+
+The argument height is the new
+height of the custom widget in pixels.
+
+@® Note
+
+This function is called only with
+Web Components that implement a
+custom widget proper (with a value
+of kind="main" in the custom
+widget JSON) but not with Styl-
+
+ing Panels or Builder Panels (with
+values of kind="styling" or
+kind="builder").
+
+>Tip
+
+If your custom widget doesn’t de-
+
+pend on resizing, don't implement
+this function. This frees the frame-
+work from calling this (potentially
+
+empty) function repeatedly during
+a resize operation.
+
+@® Note
+
+To improve the performance of a
+resize operation, this function is
+called in certain time intervals. The
+length of those time intervals may
+be subject to change.
+
+Property Setter Functions
+
+You can implement property setter functions to set the properties of your custom widget.
+
+A property setter function starts with the set keyword (object accessor notation) followed by the name of the
+property. It takes the new property value as an argument. The following example shows a setter function for a
+property color:
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 37
+«+ Sample Code
+
+set color(newColor) {
+this.style["background-color"] = newColor;
+}
+
+Property setters are optional. The property setters are called by the Custom Widget framework when
+implemented and skipped when they are not.
+
+@ Note
+
+A getter function, implemented in a similar way using the get keyword, is ignored by the Custom Widget
+framework.
+
+>Tip
+
+Depending on the functional design of your custom widget, a common programming pattern is to omit the
+implementation of specific property setter functions and instead implement the update of the associated
+properties in the onCustomWidgetAfterUpdate function.
+
+6.2.1 Using Script API Data Types in JavaScript Functions
+
+You can use certain script API data types, for example, Button, in native JavaScript functions in a Web
+Component implementation of your custom widget. For example, you can use them as function arguments and
+return values. You can also call functions provided by those script API data types.
+
+A native JavaScript function is a JavaScript function in a Web Component of your custom widget as opposed to
+a script method that your custom widget exposes in the analytics designer script editor.
+
+The following rules apply when using script API data types in native JavaScript functions:
+
+* You must call only documented functions provided by a script API data type.
+* You must prepare your code to correctly accept the returned value of a function call on a script API
+data type, as it is returned asynchronously. To retrieve such a function result correctly, apply one of the
+following programming patterns in your native JavaScript function:
+1. Use the await and async keywords. The following example shows how to call the function get Text of
+a Button that has been passed as a function argument to function myFunction:
+
+& Example
+t+ Sample Code
+async function myFunction (Button button) {
+
+var text = await button.getText ();
+
+// do something with the passed text
+}
+
+2. Use the then function. The following example shows how to call the function get Text of aButton
+that has been passed as a function argument to function myFunction:
+
+SAP Analytics Cloud Custem Widget Developer Guide
+38 PUBLIC Custom Widgets
+& Example
+t+ Sample Code
+
+function myFunction (Button button) {
+button. getText ().then (myOtherFunction(text) {
+// do something with the passed text
+a
+}
+
+3. If your browser doesn't support the await and async keywords or the then function, use a transpiler
+that provides the functionality of one of the above patterns.
+
+6.2.2 Importing Script API Data Types with Type Libraries
+
+Your custom widget can use script API data types in its implementation, for example, with method arguments,
+properties, and return values.
+
+The script API types are grouped into type libraries.
+
+@ Note
+
+Currently, type libraries are optional in the Custom Widget framework.
+
+To indicate that your Web Component uses a specific script API data type, request the appropriate type library
+inthe Custom Widget JSON. For example, if your Web component uses a Button anda Table script API data
+type, add this line to the Custom Widget JSON:
+
+«+ Sample Code
+
+"imports": ["table", "input-—controls"]
+
+@ Note
+
+The type library standard is loaded automatically.
+
+The list of type libraries is available in the Analytics Designer API Reference on SAP Help Portal at http://
+help.sap.com.
+
+6.2.3 Using Data Bindings
+
+In the web component, you can use the data bindings that you've defined in the custom widget JSON file to
+access data and call supported APIs.
+
+You need to define the data binding in the custom widget JSON first. In the following example,
+“myDat aBinding” is the name, which you can change.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 39
+«+ Sample Code
+
+"“dataBindings": {
+"myDataBinding": {
+
+"feeds": [
+
+{
+"id": "dimensions",
+"description": "Dimensions",
+"type": "dimension"
+
+\y
+
+{
+"id": "measures",
+"description": "Measures",
+"type": "mainStructureMember"”
+
+}
+
+Accessing Data
+
+Now you can access the data by the name of dat aBindings that you've defined in custom widget JSON, for
+example, "myDataBinding" in the example above.
+
+this.myDataBinding
+
+There're following properties in "myDataBinding":
+
+* Property data contains the result set rows.
+Alias feedName_index is used in the data rows.
+
+* Property met adata contains the necessary information to traverse the result set.
+
+«+ Sample Code
+{
+"data": [
+// vesultset rows
+{
+"dimensions_O": { "id": "[Product_3e315003an].
+[Product_Catego_303x5e06y2].&[PC4]", "label": "Alcohol" },
+"dimensions_1": { "id": "[Location_4nm2e04531].
+[State_47acc246_4m5x6u3k6s].&[SA1]", "label": "California" },
+"measures_O": { "raw": 30720120.73, “formatted”: "30.72 Million",
+"unit": "USD" }
+}
+],
+"metadata": {
+"feeds": {
+"measures": { "values": [ "measures_0" J, "type":
+"mainStructureMember” },
+"dimensions": { "values": [ "dimensions_0", "dimensions_1i”" ],
+"type": "dimension" }
+}y
+"dimensions": {
+"dimensions_O": { "id": "Product_3e315003an", "description":
+"Product" },
+"dimensions_1": { "id": "Location_4nm2e04531", "description":
+
+"Location" }
+
+SAP Analytics Cloud Custem Widget Developer Guide
+40 PUBLIC Custom Widgets
+\y
+"mainStructureMembers": {
+"measures_O": { "id": "[Account_BestRunJ_sold].
+[parentId].é[Discount]", "label": "Discount" }
+
+}
+
+You can write scripts for result set traversal like this:
+«+ Sample Code
+
+// Traverse result set
+
+this.myDataBinding.data.forEach (row => {
+// Parse row
+
+})
+
+Calling DataBinding APIs
+
+You can use the function getDataBinding to get DataBinding object that has data driven APIs the custom
+widget can execute.
+
+«+ Sample Code
+
+const dataBinding = this.dataBindings.getDataBinding('myDataBinding")
+await dataBinding.addDimensionToFeed("dimensions", dimensionId)
+
+The example above uses feed related APIs to add a dimension.
+
+To find a list of APIs that can be called by DataBinding object, refer to Analytics Designer AP! Reference. Search
+for DataBinding there.
+
+6.3 Styling Panel
+
+Implementing a Styling Panel is optional.
+
+The Styling Panel of a custom widget is an area in analytics designer where you can set property values of the
+custom widget at design time. This area is located in the Styling tab of the Designer panel of analytics designer
+and has the title Custom Widget Additional Properties.
+
+The Styling Panel shares the screen space of the Styling tab with other UI elements.
+
+The Styling Panel is also implemented as a Web Component. Its implementation is contained in a separate Web
+Component JavaScript file.
+
+@ Note
+
+At design time, the analytics designer creates for each custom widget a separate Styling Panel next to
+the canvas. As the Styling Panel is implemented as a Web Component, the same lifecycle functions and
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets PUBLIC 41
+callbacks are called like those of the Web Component proper (with a value of kind="main" inthe custom
+widget JSON) — except for onCustomWidgetResize, which is never called.
+
+@ Note
+
+At design time, when you delete a custom widget from the canvas, then the Styling Panel is destroyed and
+its lifecycle functions and callbacks onCustomWidget Dest roy and disconnectedCallback are called.
+The exact sequence is not defined. If you need to clean up the state of your Styling Panel, implement this in
+onCustomWidgetDestroy.
+
+6.4 Builder Panel
+
+Implementing a Builder Panel is optional.
+
+The Builder Panel of a custom widget is an area in analytics designer where you can set property values of the
+custom widget at design time. This area is located in the Builder tab of the Designer panel of analytics designer
+and has the title Builder.
+
+The Builder Panel fills the entire screen space of the Builder tab.
+
+The Builder Panel is also implemented as a Web Component. Its implementation is contained in a separate Web
+Component JavaScript file.
+
+42
+
+@ Note
+
+At design time, the analytics designer creates for each custom widget a separate Builder Panel next to
+the canvas. As the Builder Panel is implemented as a Web Component, the same lifecycle functions and
+callbacks are called like those of the Web Component proper (with a value of kind="main" inthe custom
+widget JSON) — except for onCustomWidgetResize, which is never called.
+
+@ Note
+
+At design time, when you delete a custom widget from the canvas, then the Builder Panel is destroyed and
+its lifecycle functions and callbacks onCustomWidget Dest roy and disconnectedCallback are called.
+The exact sequence is not defined. If you need to clean up the state of your Builder Panel, implement this in
+onCustomWidgetDestroy.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+PUBLIC Custom Widgets
+7 A Sample Custom Widget: Colored Box
+
+The following sections lead you through the code of a very simple custom widget, the Colored Box.
+
+Basically, it is nothing more than the name implies: a red box with a black border. Yet, it touches all relevant
+capabilities of custom widgets: It can be inserted on the canvas, it can be moved and resized, it adds script
+methods to the script editor, and it adds a Styling Panel and a Builder Panel with which you can modify
+properties of the Colored Box in the analytics designer at design time.
+
+The Colored Box custom widget consists of three Web Components: the actual Colored Box, the Styling Panel,
+and the Builder Panel of the Colored Box.
+
+The sample consists of the following files:
+
+File Description
+
+coloredbox. json Custom widget JSON of the Colored Box. Find the source
+code in chapter Custom Widget JSON [page 43].
+
+coloredbox. js Web Component JavaScript file of the Colored Box. Find the
+source code in chapter Web Component JavaScript [page
+47}.
+
+coloredbox_styling.js Web Component JavaScript file of the Styling Panel of the
+
+Colored Box. Find the source code in chapter Web Compo-
+nent JavaScript of the Styling Panel [page 51].
+
+coloredbox_builder.js Web Component JavaScript file of the Builder Panel of the
+Colored Box. Find the source code in chapter Web Compo-
+nent JavaScript of the Builder Panel [page 55].
+
+icon.png Icon of the Colored Box. Any 16 x 16 pixel icon will do.
+
+7.1 Custom Widget JSON
+
+The following code shows the custom widget JSON of the Colored Box (file coloredbox. json):
+
+«+ Sample Code
+
+"id": "com.sap.sample.coloredbox",
+"version": "1.0.0",
+"name": "Colored Box",
+"description": "A colored box",
+"newInstancePrefix": "ColoredBox",
+"icon": "“https://www.sample.com/customwidgets/coloredbox/icon.png",
+"vendor": "SAP",
+“eula": ™",
+"license": ™",
+"webcomponents": [
+
+{
+
+"kind": "main",
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 43
+44
+
+"tag": "“com-sap-sample—coloredbox",
+
+"url": "https://www.sample.com/customwidgets/coloredbox/
+coloredbox.js",
+"integrity": ™",
+
+"ignoreIntegrity": true
+\y
+{
+"kind": "styling",
+"tag": "“com-sap-sample-—coloredbox-styling",
+"url": "https://www.sample.com/customwidgets/coloredbox/
+coloredbox_styling.js",
+"integrity": "",
+"ignoreIntegrity": true
+\y
+{
+"kind": "builder",
+"tag": "“com-sap-sample—coloredbox—builder",
+"url": "https://www.sample.com/customwidgets/coloredbox/
+coloredbox_builder.js",
+"integrity": "",
+"ignoreIntegrity": true
+}
+l,
+"properties": {
+"color": {
+"type": "string",
+"description": "Background color",
+"default": "red"
+\y
+"opacity": {
+"type": "number",
+"description": "Opacity",
+"default": 1
+\y
+"width": {
+"type": "integer",
+"default": 100
+\y
+"height": {
+"type": "integer",
+"default": 100
+}
+\y
+"methods": {
+"setColor": {
+
+"description": "Sets the background color.",
+"parameters": [
+{
+"name": "newColor",
+"type": "string",
+"description": "The new background color"
+}
+],
+"body": "this.color = newColor;"”
+
+\y
+"getColor": {
+
+"returnType": "string",
+"description": "Returns the background color.",
+"body": "return this.color;”
+}
+}y
+"events": {
+"onClick": {
+"description": "Called when the user clicks the Colored Box.”
+}
+}
+}
+SAP Analytics Cloud Custem Widget Developer Guide
+PUBLIC A Sample Custom Widget: Colored Box
+The following text explains each section of the custom widget JSON. Let's start with the top part of the custom
+widget JSON:
+
+«+ Sample Code
+
+"id": "com.sap.sample.coloredbox",
+
+"version": "1.0.0",
+
+"name": "Colored Box",
+
+"description": "A colored box",
+
+"newInstancePrefix": "ColoredBox",
+
+"icon": "“https://www.sample.com/customwidgets/coloredbox/icon.png",
+"vendor": "SAP",
+
+“eula": ™",
+
+"license": ™",
+
+The Colored Box custom widget has the unique id "com.sap.sample.coloredbox", version"1.0.0.", and
+the name "Colored Box", which is displayed in the analytics designer. It has the description "A colored
+box", which is used, for example, in tooltips. The prefix for new instances of Colored Box custom widgets in the
+analytics designer is "ColoredBox". The icon for the Colored Box is provided by a URL. The vendor is "SAP".
+The end-user license agreement and the license string are empty.
+
+The Colored Box custom widget is composed of the following three Web Components:
+
+«+ Sample Code
+
+"webcomponents": [
+{
+"kind": "main",
+"tag": "“com-sap-sample—coloredbox",
+"url": "https://www.sample.com/customwidgets/coloredbox/
+coloredbox.js",
+"integrity": "",
+
+"ignoreIntegrity": true
+\y
+{
+"kind": "styling",
+"tag": "“com-sap-sample-—coloredbox-styling",
+"url": "https://www.sample.com/customwidgets/coloredbox/
+coloredbox_styling.js",
+"integrity": "",
+"ignoreIntegrity": true
+\y
+{
+"kind": "builder",
+"tag": "“com-sap-sample—coloredbox—builder",
+"url": "https://www.sample.com/customwidgets/coloredbox/
+coloredbox_builder.js",
+"integrity": "",
+"ignoreIntegrity": true
+
+ly
+
+The first Web Component is the actual Colored Box as indicated by the kind of "main". The name of its custom
+element is "com-sap-sample-—coloredbox". A URL references this Web Component'’s JavaScript file. A
+SHA256-hash can be added to check the integrity of the referenced file. However, for development purposes,
+this check is disabled by setting the ignoreIntegrity property to true.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 45
+The second Web Component is the Styling Panel of the Colored Box as indicated by the kindof "styling".
+The name of its custom element is "com-sap-sample—coloredbox—styling". A URL references this Web
+Component'’s JavaScript file. A SHA256-hash can be added to check the integrity of the referenced file.
+However, for development purposes, this check is also disabled by setting the ignoreIntegrity property to
+
+true.
+
+The third Web Component is the Builder Panel of the Colored Box as indicated by the kind of "builder".
+
+The name of its custom element is "com-sap-sample—coloredbox—builder". A URL references this Web
+Component'’s JavaScript file. A SHA256-hash can be added to check the integrity of the referenced file.
+However, for development purposes, this check is also disabled by setting the ignoreIntegrity property to
+
+true.
+
+Next are the properties of the Colored Box custom widget: color, opacity, width, and height.
+
+«+ Sample Code
+
+"properties": {
+
+"color": {
+"type": "string",
+"description": "Background color",
+"default": "red"
+
+\y
+
+"opacity": {
+"type": "number",
+"description": "Opacity",
+"default": 1
+
+\y
+
+"width": {
+"type": "integer",
+"default": 100
+
+\y
+
+"height": {
+"type": "integer",
+"default": 100
+
+},
+
+The property color represents the background color of the Colored Box. Its type is a string with a default value
+of "red".
+
+The property opacity represents how much the area behind the Colored Box is obscured by the Colored Box.
+Its type is a number with a default value of 1 (completely block the area behind the Colored Box).
+
+The properties width and height represent the initial width and height of the custom widget. They are both
+of type integer with a default value of 100 pixels. The properties width and height are special properties to
+the Custom Widget framework: Implemented setter functions for them will not be called.
+
+Then, the script methods of the Colored Box are defined:
+
+«+ Sample Code
+
+"methods": {
+"setColor": {
+
+"description": "Sets the background color.",
+"parameters": [
+{
+"name": "newColor",
+"type": "string",
+"description": "The new background color"
+
+}
+
+SAP Analytics Cloud Custem Widget Developer Guide
+46 PUBLIC A Sample Custom Widget: Colored Box
+l,
+"body": "this.color = newColor;"
+
+\y
+"getColor": {
+
+"returnType": "string",
+"description": "Returns the background color.",
+"body": "return this.color;"
+
+}
+by
+
+Function setColor takes one parameter, the new color. The body property contains the script code, which
+sets the passed parameter newColor ,a string, to the Colored Box’s color property.
+
+This function definition lets you write script code in the analytics designer script editor like, for example,
+ColoredBox_1.setColor ("red") ;.
+
+Function get Color takes no parameters and returns the color. The body property contains the script code,
+which returns the value of the Colored Box’s color property as a value of type string.
+
+This function definition lets you write script code in the analytics designer script editor like, for example, var
+theColor = ColoredBox_l.getColor ();.
+
+To keep the sample short, similar script methods for the opacity property are not implemented.
+
+Finally, an onClick event is defined:
+
+«+ Sample Code
+
+"events": {
+"onClick": {
+"description": "Called when the user clicks the Colored Box.”
+
+}
+}
+
+This event has no parameters, as events can't have parameters yet.
+
+7.2 Web Component JavaScript
+
+The following listing shows the Web Component JavaScript of the Colored Box (file coloredbox. js).
+
+It is explained step by step in the following sections.
+«+ Sample Code
+
+(function() {
+let template = document.createElement ("template") ;
+template.innerHTML = ~
+<style>
+shost {
+border-radius: 25px;
+border-width: 4px;
+border-color: black;
+border-style: solid;
+display: block;
+}
+</style>
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC
+
+47
+;
+class ColoredBox extends HTMLElement {
+constructor() {
+super ();
+let shadowRoot = this.attachShadow({mode: "“open"});
+shadowRoot .appendChild(template.content .cloneNode (true) );
+this.addEventListener("click", event => {
+var event = new Event ("onClick");
+this.dispatchEvent (event) ;
+a
+this._props = {};
+}
+onCustomWidgetBeforeUpdate (changedProperties) {
+this._props = { ...this._props, ...changedProperties };
+}
+onCustomWidgetAfterUpdate (changedProperties) {
+if ("color" in changedProperties) {
+this.style["background-color"] = changedProperties ["color"];
+}
+if ("opacity” in changedProperties) {
+this.style["opacity"] = changedProperties ["opacity"];
+}
+}
+}
+customElements.define ("com-sap-—sample—coloredbox", ColoredBox) ;
+
+Os
+
+Defining the Custom Element and Its JavaScript API
+
+The Web Component JavaScript defines a new custom element com—sap—-sample—coloredbox and
+associates it with a JavaScript API represented by the ColoredBox class in the following code:
+
+«+ Sample Code
+
+(function() {
+class ColoredBox extends HTMLElement {
+
+}
+customElements.define ("com-sap—sample-—coloredbox", ColoredBox) ;
+
+Os
+
+The entire JavaScript code of the file is nested into a self-executing JavaScript function. This isolates
+
+the scope of its variables from the global scope. The JavaScript API of the new custom element is
+implemented in the ColoredBox class, which extends the JavaScript API of the HTMLElement class. Calling
+customElements.define () defines anew custom element named com-sap—sample—coloredbox and
+associates it with the JavaScript API represented by the ColoredBox class. Note that com-sap-sample-
+coloredbox is the same name as the property value of property name tag of the first item in the
+webcomponents array inside the custom widget JSON.
+
+Creating a Template Object
+
+The following code creates a template HTML element:
+
+SAP Analytics Cloud Custem Widget Developer Guide
+48 PUBLIC A Sample Custom Widget: Colored Box
+«+ Sample Code
+
+let template = document .createElement ("template") ;
+template.innerHTML = ~
+<style>
+shost {
+border-radius: 25px;
+border-width: 4px;
+border-color: black;
+border-style: solid;
+display: block;
+}
+</style>
+
+i
+
+Template elements are an important part of Web Components. This template HTML element is a template for
+
+the “shadow DOM” HTML element that represents the HTML DOM of the Colored Box, which exists separately
+from the HTML DOM of the web page. It is inserted only during rendering into the HTML DOM of the web page.
+Thus, you can, for example, apply styles to a shadow DOM element without interfering with the HTML DOM of
+
+the web page.
+
+This template element is very simple. It declares a CSS style of several CSS properties together with the CSS
+selector z:host. This CSS style is assigned to the template element. The selector :host, part of the Web
+Components standard, selects the root of the shadow DOM element, that is, the root of our template element.
+The CSS property display controls the visualization of the custom HTML element, possible values are, for
+example, block, flex, of inline-block
+
+Defining the JavaScript API of the Custom Element
+The JavaScript API of the custom element is defined by the ColoredBox class, which extends the
+HTMLElement class:
+
+«+ Sample Code
+
+class ColoredBox extends HTMLElement {
+
+}
+
+Implementing the Constructor
+
+The first function in the JavaScript API is the constructor:
+«+ Sample Code
+
+constructor() {
+super ();
+let shadowRoot = this.attachShadow({mode: "“open"});
+shadowRoot .appendChild(template.content .cloneNode (true) );
+this.addEventListener("click", event => {
+var event = new Event ("onClick");
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 49
+this.dispatchEvent (event) ;
+a
+this._props = {};
+
+First, the super () function is called. Then, the shadow DOM root element is created. Next, a copy of the
+template element is added as a child element to the shadow DOM root element. Finally, an event listener is
+attached to the custom element, listening for click events. If one such event occurs, its handler function
+creates anew onClick event and dispatches (“fires”) it. Note that the name of the event, onClick, must be
+the same name as it is defined in the event s section of the custom widget JSON. Note also, that this inthe
+code refers to the custom element.
+
+Lastly, to make managing the properties of the Web Component easier, an empty __props object is initialized.
+
+Handling Custom Widget Updates
+
+The Colored Box handles updates of its two properties color and opacity, defined in the
+properties array of the custom widget JSON, by implementing the onCustomWidgetBeforeUpdate and
+onCustomWidgetAfterUpdate functions.
+
+In the onCustomWidgetBeforeUpdate function, the properties in the passed changedProperties object
+are merged with the properties of the __props object. Thus, props contains the state of all Colored Box
+properties before the Colored Box is updated.
+
+«+ Sample Code
+
+onCustomWidgetBeforeUpdate (changedProperties) {
+this._props = { ...this._props, ...changedProperties };
+}
+
+In the onCustomWidgetAfterUpdate function, the properties in the passed changedProperties object is
+used to directly set the color and opacity CSS styles of the Colored Box.
+
+«+ Sample Code
+
+onCustomWidgetAfterUpdate (changedProperties) {
+if ("color" in changedProperties) {
+this.style["background-color"] = changedProperties["color"];
+}
+if ("opacity"” in changedProperties) {
+this.style["opacity"] = changedProperties ["opacity"];
+}
+
+>Tip
+
+To print a property value to the browser console, for example, during debugging, use code in the following
+form:
+
+console.log(* ${this._props[<propertyName>]}°);
+
+| t+ Sample Code
+
+SAP Analytics Cloud Custem Widget Developer Guide
+50 PUBLIC A Sample Custom Widget: Colored Box
+The following example prints the widget’s name to the browser console during
+onCustomWidget BeforeUpdate
+
+t+ Sample Code
+
+onCustomWidgetBeforeUpdate(changedProperties) {
+//.
+
+console.log(* ${this._props["widgetName"] }>);
+}
+
+Implementing Property Setters
+
+Another way to implement the update of the Colored Box properties color and opacity is to implement
+property setter functions.
+
+@ Note
+
+This approach is useful only for simple custom widgets with very few properties that are independent from
+each other. The more properties are added to the custom widget the more likely it is that (potentially
+complex) dependencies between properties arise. Managing these dependencies by implementing a
+onCustomWidgetAfterUpdate function is the preferred alternative.
+
+The following code shows the implementation of the property setter functions:
+«+ Sample Code
+
+set color(newColor) {
+this.style["background-color"] = newColor;
+}
+set opacity (newColor) {
+this.style["opacity"] = newColor;
+}
+
+Property setter functions have the name of the property as it is defined in the custom widget JSON. A setter
+function is prefixed with the set keyword (object accessor notation).
+
+The actual implementation is simple: For example, in the setter function of the color property, the passed
+value of the new color is assigned to the CSS style property background-color of the custom element.
+
+Similar rules apply to the opacity property.
+
+7.3 Web Component JavaScript of the Styling Panel
+
+The following listing shows the JavaScript of the Styling Panel of the Colored Box (file
+coloredbox_styling. js).
+
+This Styling Panel lets you change the color of the Colored Box in analytics designer.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC
+
+51
+It is explained step by step in the following sections. This JavaScript code is very similar to the Web Component
+JavaScript of the Colored Box.
+
+«+ Sample Code
+
+(function () {
+let template = document.createElement ("template") ;
+template.innerHTML =
+<form id="form">
+<fieldset>
+<legend>Colored Box Properties</legend>
+<table>
+<tr>
+<td>Color</td>
+<td><input id="styling_color" type="text" size="40"
+maxlength="40"></td>
+</tr>
+</table>
+<input type="submit" style="display:none; ">
+</fieldset>
+</form>
+
+;
+class ColoredBoxStylingPanel extends HTMLElement {
+constructor() {
+super ();
+this._shadowRoot = this.attachShadow({mode: "“open"});
+this._shadowRoot.appendChild(template.content .cloneNode (true) );
+
+this._shadowRoot.getElementBylId ("form") .addEventListener ("submit",
+this._submit.bind (this) );
+
+_submit (e) {
+e.preventDefault ();
+this.dispatchEvent (new CustomEvent ("propertiesChanged", {
+detail: {
+properties: {
+color: this.color
+}
+
+De
+
+}
+
+set color(newColor) {
+this._shadowRoot.getElementById("styling_color").value = newColor;
+
+}
+get color() {
+return this._shadowRoot.getElementBylId("styling_color") .value;
+
+}
+
+}
+customElements.define ("com-sap—sample-coloredbox-styling",
+
+ColoredBoxStylingPanel) ;
+
+Defining the Custom Element and Its JavaScript API
+
+The Web Component JavaScript defines a new custom element com-sap-sample-coloredbox-styling
+and associates it with a JavaScript API represented by the ColoredBoxSt ylingPanel class in the following
+code:
+
+«+ Sample Code
+
+SAP Analytics Cloud Custem Widget Developer Guide
+52 PUBLIC A Sample Custom Widget: Colored Box
+(function() {
+class ColoredBoxStylingPanel extends HTMLElement {
+
+}
+
+customElements.define ("com-sap—sample-—coloredbox-styling",
+ColoredBoxStylingPanel) ;
+OO;
+
+The entire JavaScript code of the file is nested into a self-executing JavaScript function. This isolates the
+scope of its variables from the global scope. The JavaScript API of the new custom element is implemented
+inthe ColoredBoxStylingPanel class, which extends the JavaScript API of the HTMLElement class. Calling
+customElements.define () defines anew custom element named com-sap—sample-—coloredbox-
+styling and associates it with the JavaScript API represented by the ColoredBoxStylingPanel class.
+
+@ Note
+
+Note that com-sap-sample-coloredbox-—styling is the same name as the property value of property
+name tag of the second item in the webcomponent s array inside the custom widget JSON.
+
+Creating a Template Object
+
+The following code creates a template HTML element:
+«+ Sample Code
+
+let template = document .createElement ("template") ;
+template.innerHTML =
+<form id="form">
+<fieldset>
+<legend>Colored Box Properties</legend>
+<table>
+<tr>
+<td>Color</td>
+<td><input id="styling_color" type="text" size="40"
+maxlength="40"></td>
+</tr>
+</table>
+<input type="submit" style="display:none; ">
+</fieldset>
+</form>
+
+i
+
+This template HTML element is a template for the shadow DOM HTML element that represents the HTML DOM
+of the Styling Panel of the Colored Box.
+
+This template element defines a simple form with id "form". It contains a table with an input field with id
+"styling_color" anda length and capacity of 40 characters.
+
+>Tip
+
+Defining a hidden input field of type submit is a trick to make to form work when the form contains more
+than one input element. Strictly speaking, this it is not necessary yet, but as soon as you add more input
+elements.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 53
+Defining the JavaScript API of the Custom Element
+
+The JavaScript API of the custom element is defined by the ColoredBoxStylingPanel class, which extends
+the HTMLElement class:
+
+«+ Sample Code
+
+class ColoredBoxStylingPanel extends HTMLElement {
+
+}
+
+Implementing the Constructor
+
+The first function in the JavaScript API is the constructor:
+«+ Sample Code
+
+constructor() {
+super ();
+this._shadowRoot = this.attachShadow({mode: "“open"});
+this._shadowRoot .appendChild(template.content .cloneNode (true) );
+this._shadowRoot .getElementBylId ("form") .addEventListener ("submit",
+this._submit.bind (this) );
+}
+
+First, the super () function is called. Then, the shadow DOM root element is created. A reference to it is stored
+inthe local variable _shadowRoot, because the shadow DOM root element is referenced later inthe color
+setter and getter functions of this class. Next, a copy of the template element is added as a child element to
+the shadow DOM root element. Finally, an event listener is attached to form, listening for submit events. If
+one such event occurs, the event handler function submit () is called. Calling bind () and passing this to
+_submit () ensures that in_submit () the keyword this references the custom element.
+
+The __submit () function is implemented as follows:
+«+ Sample Code
+
+_submit (e) f{
+e.preventDefault ();
+this.dispatchEvent (new CustomEvent ("propertiesChanged", {
+detail: {
+properties: {
+color: this.color
+
+The __submit () function calls function preventDefault () onthe passed event object, which prevents
+submitting the form to the server.
+
+Then, a custom event is created. Its name "propert iesChanged" indicates a change of properties to the
+Custom Widget framework (incidentally, you can also create and dispatch such events in the Web Component
+
+SAP Analytics Cloud Custem Widget Developer Guide
+54 PUBLIC A Sample Custom Widget: Colored Box
+JavaScript of your main Web Component). This custom event contains a JSON payload, which defines which
+properties actually have changed and to what values. In this case it is the color property of the custom widget.
+Its new value is retrieved by executing this.color, which implicitly calls the color getter function of class
+ColoredBoxStylingPanel.
+
+Implementing Property Getters and Setters
+
+The following code shows the implementation of color setter and getter functions.
+
+@ Note
+
+Do not confuse them with the color setter function of the ColoredBox class.
+
+«+ Sample Code
+
+set color(newColor) {
+this._shadowRoot .getElementById("styling_color") .value = newColor;
+}
+get color() {
+return this._shadowRoot.getElementById("styling_color") .value;
+}
+
+The color setter function places a text representation of the new color into the input field of the Colored Box’s
+Styling Panel. Incidentally, in this JavaScript code this function is not called directly, but by the Custom Widget
+framework when the Styling Panel Sheet of the Colored Box is created, assigning an initial value to the input
+field.
+
+The color getter function returns the text of the input field of the Colored Box’s Styling Panel. This function is
+called indirectly in the submit () event handler function during the construction of the JSON event payload
+when the current color is retrieved by this.color.
+
+7.4 Web Component JavaScript of the Builder Panel
+
+The following listing shows the JavaScript of the Builder Panel of the Colored Box (file
+coloredbox_builder. js).
+
+This Builder Panel lets you change the opacity of the Colored Box in analytics designer.
+
+The JavaScript code is very similar to the Web Component JavaScript of the Styling Panel of the Colored Box.
+«+ Sample Code
+
+(function () {
+let template = document.createElement ("template") ;
+template.innerHTML = ~
+<form id="form">
+<fieldset>
+<legend>Colored Box Properties</legend>
+<table>
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 55
+<tr>
+<td>Opacity</td>
+<td><input id="builder_opacity” type="text" size="5"
+maxlength="5"></td>
+</tr>
+</table>
+<input type="submit" style="display:none; ">
+</fieldset>
+</form>
+<style>
+shost {
+display: block;
+padding: lem lem lem lem;
+}
+
+</style>
+;
+class ColoredBoxBuilderPanel extends HTMLElement {
+constructor() {
+super ();
+
+this._shadowRoot = this.attachShadow({mode: "“open"});
+this._shadowRoot.appendChild(template.content .cloneNode (true) );
+
+this._shadowRoot.getElementById ("form") .addEventListener("submit",
+this._submit.bind (this) );
+}
+_submit (e) {
+e.preventDefault ();
+this.dispatchEvent (new CustomEvent ("propertiesChanged", {
+detail: {
+properties: {
+opacity: this.opacity
+}
+
+De
+}
+set opacity (newOpacity) {
+this._shadowRoot.getElementById("builder_opacity") .value =
+newOpacity;
+
+get opacity() f{
+return this._shadowRoot .getElementBylId ("builder_opacity") .value;
+}
+}
+customElements.define ("com—-sap-—sample-—coloredbox—builder",
+ColoredBoxBuilderPanel) ;
+AO;
+
+Defining the Custom Element and Its JavaScript API
+
+The Web Component JavaScript defines a new custom element com-sap—-sample-coloredbox-builder
+and associates it with a JavaScript API represented by the ColoredBoxBuilderPanel class in the following
+code:
+
+«+ Sample Code
+
+(function() {
+class ColoredBoxBuilderPanel extends HTMLElement {
+
+}
+
+SAP Analytics Cloud Custem Widget Developer Guide
+56 PUBLIC A Sample Custom Widget: Colored Box
+customElements.define ("com—-sap-—sample-—coloredbox—builder",
+ColoredBoxBuilderPanel) ;
+AO;
+
+The entire JavaScript code of the file is nested into a self-executing JavaScript function. This isolates the
+scope of its variables from the global scope. The JavaScript API of the new custom element is implemented
+inthe ColoredBoxBuilderPanel class, which extends the JavaScript API of the HTMLElement class. Calling
+customElements.define () defines anew custom element named com-sap—sample-—coloredbox-
+builder and associates it with the JavaScript API represented by the ColoredBoxBuilderPanel class.
+
+@ Note
+
+Note that com-sap-sample-coloredbox—builder is the same name as the property value of property
+name tag of the third item in the webcomponents array inside the custom widget JSON.
+
+Creating a Template Object
+
+The following code creates a template HTML element:
+«+ Sample Code
+
+let template = document.createElement ("template") ;
+template.innerHTML = ~
+<form id="form">
+<fieldset>
+<legend>Colored Box Properties</legend>
+<table>
+<tr>
+<td>Opacity</td>
+<td><input id="builder_opacity" type="text" size="5"
+maxlength="5"></td>
+</tr>
+</table>
+<input type="submit" style="display:none; ">
+</fieldset>
+</form>
+<style>
+shost {
+display: block;
+padding: lem lem lem lem;
+}
+</style>
+
+This template HTML element is a template for the shadow DOM HTML element that represents the HTML DOM
+of the Styling Panel of the Colored Box.
+
+This template element defines a simple form with id "form". It contains a table with an input field with id
+"builder_opacity" and a length and capacity of 5 characters.
+
+>Tip
+
+Defining the hidden input field of type submit is a trick to make to form work when the form contains more
+than one input element. Strictly speaking, this it is not necessary yet, but as soon as you add more input
+elements.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 57
+The CSS selector : host adds CSS styles to the template element. The selector :host, part of the Web
+Components standard, selects the root of the shadow DOM element, that is, the root of our template element.
+The CSS property display controls the visualization of the custom HTML element, in this case as a block.
+The CSS property padding ensures enough padding around the form.
+
+Defining the JavaScript API of the Custom Element
+
+The JavaScript API of the custom element is defined by the ColoredBoxBuilderPanel class, which extends
+the HTMLElement class:
+
+«+ Sample Code
+
+class ColoredBoxBuilderPanel extends HTMLElement {
+
+}
+
+Implementing the Constructor
+
+The first function in the JavaScript API is the constructor:
+«+ Sample Code
+
+constructor() {
+super ();
+this._shadowRoot = this.attachShadow({mode: "“open"});
+this._shadowRoot.appendChild(template.content .cloneNode (true) );
+
+this._shadowRoot.getElementBylId ("form") .addEventListener ("submit",
+this._submit.bind (this) );
+
+First, the super () function is called. Then, the shadow DOM root element is created. A reference to it is stored
+inthe local variable _shadowRoot, because the shadow DOM root element is referenced later in the color
+setter and getter functions of this class. Next, a copy of the template element is added as a child element to
+the shadow DOM root element. Finally, an event listener is attached to form, listening for submit events. If
+one such event occurs, the event handler function submit () is called. Calling bind () and passing this to
+_submit () ensures that in_submit () the keyword this references the custom element.
+
+The __submit () function is implemented as follows:
+«+ Sample Code
+
+_submit (e) {
+e.preventDefault ();
+this.dispatchEvent (new CustomEvent ("propertiesChanged", {
+detail: {
+properties: {
+opacity: this.opacity
+
+SAP Analytics Cloud Custem Widget Developer Guide
+58 PUBLIC A Sample Custom Widget: Colored Box
+| }
+The __submit () function calls function preventDefault () onthe passed event object, which prevents
+submitting the form to the server.
+
+Then, a custom event is created. Its name "propert iesChanged" indicates a change of properties to the
+Custom Widget framework. This custom event contains a JSON payload, which defines which properties
+actually have changed and to what values. In this case it is the opacity property of the custom widget. Its
+new value is retrieved by executing this.opacity, which implicitly calls the opacity getter function of class
+ColoredBoxBuilderPanel.
+
+Implementing Property Getters and Setters
+
+The following code shows the implementation of the opacity setter and getter functions.
+«+ Sample Code
+
+set opacity (newOpacity) {
+this._shadowRoot .getElementBylId("builder_opacity") .value = newOpacity;
+}
+get opacity() f{
+return this._shadowRoot .getElementById("builder_opacity") .value;
+}
+
+The opacity setter function places a text representation of the new opacity into the input field of the Colored
+Box's Builder Panel. Incidentally, in this JavaScript code this function is not called directly, but by the Custom
+Widget framework when the Builder Panel of the Colored Box is created, assigning an initial value to the input
+field.
+
+The opacity getter function returns the text of the input field of the Colored Box’s Builder Panel. This function
+is called indirectly inthe _submit () event handler function during the construction of the JSON event
+payload when the current opacity is retrieved by this.opacity.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+A Sample Custom Widget: Colored Box PUBLIC 59
+8 Custom Widgets on Mobile Devices
+
+You can enable and run a custom widget on a mobile device.
+
+Enabling Your Custom Widget for Mobile Devices
+
+To enable a custom widget to run on a mobile device, set its support sMobile property to true (see section
+Root Object in chapter Custom Widget JSON Reference [page 16] for more information).
+
+4 Caution
+
+Before enabling this flag, please make sure that your custom widget’s functionality is working properly on
+mobile devices.
+
+Detecting if Your Custom Widget is Running on a Mobile Device
+
+Ifthe support sMobile property is set to true, then the property mobileMode is
+
+passed inthe otherProperties array to functions onCust omWidget BeforeUpdate and
+onCustomWidgetAfterUpdate. This lets you find out at runtime if the custom widget is currently running
+ona mobile device. See also section Provide alternatives to user interactions that use modifier keys below for a
+code example.
+
+Tips for Developing Custom Widgets for Mobile Devices
+
+When you develop a custom widget for a mobile device instead of a non-mobile device (for example, a desktop
+or laptop computer), consider the following suggestions:
+
+* Make areas larger that provide user interaction.
+Ensure that areas of your custom widget that provide user interaction are sufficiently large. For example,
+you may want to enlarge clickable areas in your custom widget when it is running on a mobile device, so
+that it can be comfortably tapped with a finger.
+
+* Provide alternatives to user interactions that use modifier keys.
+User interactions on a desktop computer often involve using the modifier keys of a keyboard, such as,
+for example, the [snitt]or[contro1] key. Such modifier keys are not present on a mobile device. If your
+custom widget supports using such modifier keys when running on a desktop computer, think about
+providing an alternative when your custom widget is running on a mobile device. Such an alternative should
+comply with the user interaction guidelines and standards of your mobile device.
+The following example shows custom widget code that performs the operation doAct ion after a user
+interaction. The specific user interaction depends on whether the custom widget is running on a mobile or
+
+SAP Analytics Cloud Custem Widget Developer Guide
+60 PUBLIC Custom Widgets on Mobile Devices
+on anon-mobile device. They are implemented as follows: With a custom widget running on a non-mobile
+device, you need to click the custom widget and press the[snitt | key at the same time to start the
+operation. With a custom widget running on a mobile device, you need to tap the custom widget with two
+fingers to start the operation.
+
+The example code below registers one of two event listeners when the custom widget is in view mode.
+When the custom widget is running on a non-mobile device, then an event listener is registered that
+performs operation doAct ion when the custom widget is clicked and at the same time the key is
+pressed. When the custom widget is running on a mobile device, then an event listener is registered that
+performs operation doAct ion when the custom widget is tapped with two fingers.
+
+File: coloredbox_main.js
+
+«+ Sample Code
+
+class ColoredBox extends HTMLElement {
+constructor() {
+
+this._myEventListenersRegistered = false;
+}
+onCustomWidgetBeforeUpdate (changedProps) {
+this._props = { ...this._props, ...changedProps };
+// vegisters the event listeners when not in design mode,
+// when the event listeners haven’t been registered yet,
+// and when in mobile mode
+if (this._props["designMode"] === false && !
+this._myEventListenersRegistered) {
+this._props["mobileMode"] && this._props["mobileMode"] ===
+true ?
+this.registerTwoFingerTapListener ()
+this.registerShiftClickListener ();
+this._myEventListenersRegistered = true;
+}
+}
+registerTwoFingerTapListener() {
+this.addEventListener ("touchstart", event => {
+event .preventDefault ();
+if (event .targetTouches.length === 2) {
+// at view time, touching with two fingers performs the
+action below
+this.doAction ();
+
+—
+
+a
+}
+registerShiftClickListener() {
+this.addEventListener("click", event => {
+const shiftKey = event.shiftKey;
+if (shiftKey) {
+// at view time, shift—-clicking performs the action below
+this.doAction ();
+} else {
+this.dispatchEvent (new Event ("onClick") );
+}
+a
+}
+doAction() {
+// do something
+}
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Custom Widgets on Mobile Devices PUBLIC
+
+61
+9 Exporting Custom Widgets
+
+As acustom widget developer, you need to be aware of the prerequisites so that end users can export the
+custom widgets to PDF, PPTX, and Google Slides at runtime.
+
+Custom widgets support PDF, PPTX, and Google Slides export. However, they might not be fully exported. To
+make sure that all the defined elements can be exported:
+
+1. Be aware of the export restrictions and test first.
+
+@ Note
+
+Due to the restrictions of JavaScript library and JavaScript generator library that custom widgets are
+based on, custom widgets might not be fully exported. For instance, the chart axes of a custom widget
+based on D3.js won't be exported. Custom widgets with CSS settings might not keep all the styling
+when exported, either.
+
+2. Set support sExport to true inthe custom widget JSON file.
+
+Use serializeCustomWidgetToImage API (Optimized Story Experience)
+
+To fully export your custom widget with complex stylings to PDF, PPTX, or Google Slides, you can use the
+serializeCustomWidget ToImage API as an export alternative, which returns a Base64 encoded image for
+export.
+
+Add the following API to your custom widget's Web Component JavaScript file:
+
+t+ Code Syntax
+
+serializeCustomWidgetToImage?: (options?: IExportOptions) => Promise<string>
+
+| string;
+
+interface IExportOptions {
+pageSize: IPageSize;
+paperSize: PaperSizeType;
+orientation: OrientationType;
+
+}
+
+interface IPageSize {
+width: number;
+height: number;
+
+}
+
+enum PaperSizeType {
+
+AUTO = ‘Auto’,
+A2 = 'A2',
+A3 = 'A3',
+A4 = 'A4',
+A5 = 'AS',
+LETTER = "Letter',
+LEGAL = ‘Legal’
+
+}
+
+enum OrientationType {
+LANDSCAPE = ‘Landscape’,
+PORTRAIT = ‘Portrait’
+
+—
+
+SAP Analytics Cloud Custem Widget Developer Guide
+62 PUBLIC Exporting Custom Widgets
+«+ Sample Code
+
+serializeCustomWidgetToImage = async () => {
+return new Promise (resolve => {
+const imageStr = 'data:image/png;base64, iVBORwOKGgoAAAANSUhNEUGAAABQA';
+setTimeout (() => f{
+resolve (imageStr) ;
+}, 500);
+
+be
+
+When using the serializeCustomWidget ToImage API, note that:
+
+* The returned Base64 string is capped at 2OMB.
+* The supported image formats are PNG, JPG and JPEG.
+* Export longer than 3 minutes results in time out.
+
+@ Note
+
+If the custom widget is on a responsive page, the export paper size is Auto no matter what's been selected.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Exporting Custom Widgets PUBLIC 63
+10 Enabling Linked Analysis for Your Custom
+Widget (Optimized Story Experience)
+
+Learn how to enable linked analysis for your custom widget in certain cases.
+
+@ Note
+
+Only custom widgets with data binding are supported for linked analysis.
+
+Case How to Enable
+
+Custom widget as the target widget in linked analysis Linked analysis is enabled by default. As a custom widget
+developer, you don't need to co any further actions.
+
+Custom widget as the source widget in linked analysis, with-
+out Filter on Data Point Selection
+
+Custom widget as the source widget in linked analysis, with 4, |n the contribution JSON file, set
+
+Filter on Data Point Selection supportsLinkedAnalysisFilterOnSelecti
+
+ontotrue.
+
+2. InWeb Component JavaScript file, use Data Binding's
+linked analysis APls. For more information, refer to the
+following section.
+
+> Remember
+
+In addition, in Optimized Design Experience, story cde-
+signers need to select Filter on Data Point Selection
+when configuring linked analysis.
+
+Script APIs
+You can use the following Data Binding's linked analysis APIs to set, remove the linked analysis filter and check
+whether filter on data point selection has been enabled for the custom widget respectively:
+
+dataBinding.getLinkedAnalysis().setFilters()
+dataBinding.getLinkedAnalysis() .removeFilters ()
+dataBinding.getLinkedAnalysis() .isDataPointSelectionEnabled ()
+
+Here're script examples to set linked analysis based on data point selection:
+«+ Sample Code
+
+const selection = {
+
+"Location_4nm2e04531": "[Location_4nm2e04531].
+[State_47acc246_4m5x6u3k6s].&[SA2]",
+"Product_3e315003an": "[Product_3¢315003an].
+
+[Product_Catego_303x5e06y2] .&[PC2]”"
+
+SAP Analytics Cloud Custem Widget Developer Guide
+64 PUBLIC Enabling Linked Analysis for Your Custom Widget (Optimized Story Experience)
+i
+this.dataBindings.getDataBinding() .getLinkedAnalysis().setFilters (selection);
+
+«+ Sample Code
+
+const selections = [f{
+
+"Location_4nm2e04531": "[Location_4nm2e04531].
+[State_47acc246_4m5x6u3k6s] .&[SA1]",
+
+"Product_3e315003an": "[Product_3¢315003an].
+[Product_Catego_303x5e06y2] .&[PCc4]”
+\y
+{
+
+"Location_4nm2e04531": "[Location_4nm2e04531].
+[State_47acc246_4m5x6u3k6s] .&[SA2]",
+
+"Product_3e315003an": "[Product_3¢315003an].
+[Product_Catego_303x5e06y2] .&[PC2]”
+ia
+this.dataBindings.getDataBinding() .getLinkedAnalysis().setFilters (selections) ;
+
+Here's an example to remove linked analysis based on data point selection:
+
+«+ Sample Code
+
+this.dataBindings.getDataBinding() .getLinkedAnalysis().removeFilters();
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Enabling Linked Analysis for Your Ci Widget (Optimized Story Experience) PUBLIC 65
+
+11 Configuring Bookmark Support for
+Your Custom Widget (Optimized Story
+Experience)
+
+You can enable bookmark support for your custom widget.
+
+In optimized story experience, story viewers can save bookmarks with custom widgets. For more information
+about bookmarks, refer to Bookmark and Share Story Views.
+
+When the bookmark is opened, the lifecycle method onCustomWidgetAfterUpdate of the custom widget is
+run. As acustom widget developer, you can get the property values and data bindings result in the bookmark.
+
+@ Note
+
+In SAP Analytics Cloud, analytics designer, bookmarking with custom widgets isn't supported.
+
+To enable bookmark support for your custom widget, as a custom widget developer, you need to set
+support sBookmark to true inits JSON file. Optionally, you can exclude the properties from bookmarks.
+
+Enable Bookmark Support
+
+In the custom widget JSON file, specify whether the custom widget support bookmarking by setting the
+supportsBookmark to true Or false, aS support sMobile
+
+«+ Sample Code
+
+"“supportsBookmark": true
+
+Specify Bookmark Properties
+
+All properties are included in bookmarks by default. In the custom widget JSON file, you can exclude properties
+from bookmarks by setting includeInBookmarks to false for them.
+
+«+ Sample Code
+
+{
+
+"properties": {
+"color": {
+"type": "string",
+"description": "Background color",
+"default": "red"
+\y
+"opacity": {
+
+SAP Analytics Cloud Custem Widget Developer Guide
+66 PUBLIC Configuring Bookmark Support for Your Custom Widget (Optimized Story Experience)
+"type": "number",
+"description": "Opacity",
+"default": 1,
+"includeInBookmarks": false
+}
+
+}
+
+@ Note
+
+Some built-in properties, such as "width" and "height", are bookmarked by default, so any change to
+their includeInBookmarks attribute is disregarded.
+
+Address Version Updates
+
+When updating the version of your custom widget, be mindful of potential impacts on the existing bookmarks
+that contain prior versions. You must ensure the changes in custom widgets of new version are correctly
+handled, which includes, but not limited to, the following cases:
+
+* |faproperty is marked as excluded from bookmarks in the JSON file, bookmarks won't include it when
+opened. You should revisit the Web Component JavaScript to verify its functionality.
+
+* |faproperty is deleted in the new version, bookmarks created before the deletion still include it when
+reopened. You need to decide whether to keep it in the Web Component JavaScript.
+
+* |faproperty is changed in the new version, such as its data type, and there're already bookmarks that
+contain it, you're recommended to reexamine the Web Component JavaScript to ensure compatibility.
+
+* Ifa property was included in bookmarks but is marked as excluded from bookmarks in the new version's
+JSON file, bookmarks created before still contain it when reopened.
+
+In such cases, it's important for you to review the Web Component JavaScript to ensure your custom widget
+aligns with these changes and continues to function as expected.
+
+@ Note
+
+If acustom widget's major version is changed, it’s considered as a distinct widget. Therefore, the version
+change doesn’t affect the existing bookmarks.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Configuring Bookmark Support for Your Custom Widget (Optimized Story Experience) PUBLIC 67
+12 Best Practices
+
+12.1 Dispatching a Property Change
+
+When one of your properties has changed, store the changed property value, for example, in a variable of your
+Web Component JavaScript, then notify the framework of this change by dispatching a propertiesChanged
+custom event.
+
+The following example shows dispatching a property change of property color:
+«+ Sample Code
+
+this.dispatchEvent (new CustomEvent ("propertiesChanged", {
+detail: {
+properties: {
+color: this.color
+}
+
+b))3
+
+Do dispatch a propert iesChanged custom event in the following situations:
+
+* as aresult of a user interaction
+
+* innative JavaScript functions
+
+Do not dispatch a propert iesChanged custom event in the following situations and functions, as this may
+cause, for example, an endless loop in JavaScript execution:
+
+* constructor
+
+* onCustomWidget BeforeUpdate
+* onCustomWidgetAfterUpdate
+* onCustomWidgetDestroy
+
+* connectedCallback
+
+* disconnectedCallback
+
+Note that after dispatching the propert iesChanged custom event, the changed property value is not part
+of the properties that are passed later to the onCustomWidget BeforeUpdate (oChangedProperties) and
+onCustomWidgetAfterUpdate (oChangedProperties) functions of this Web Component.
+
+This is simply because, as this Web Component initiated dispatching the property change in the first place,
+
+it doesn't need to be notified of it again. However, the changed property is automatically passed to related
+
+Web Components, because they need to be notified of the property change. Related Web Components of the
+custom widget’s Web Component proper are the Web Component of the Styling Panel and the Web Component
+of the Builder Panel. The same rules, with appropriately reversed roles, apply when dispatching property
+changes in the Web Component of the Styling Panel and the Web Component of the Builder Panel.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+68 PUBLIC Best Practices
+12.2 Calling Methods of Passed Objects of Script API Types
+
+Call methods of passed objects of script API data types, for example Button, only in script methods.
+
+As you recall, there are two kinds of script methods, depending on where the script method is implemented:
+
+1. The method definition in the custom widget JSON has a body property that contains the script method
+implementation.
+
+2. The method definition in the custom widget JSON does not have a body property. The script method
+implementation is a native JavaScript function in the Web Component JavaScript.
+
+The following example shows parts of a custom widget JSON and the corresponding Web Component
+JavaScript.
+
+This shows the correct use: The script method setButtonText1, with a body property, calls the set Text
+method of the passed Button object (see (1)), as does the script method setButtonText2, which has no
+
+body property but is implemented as a native JavaScript function in the Web Component JavaScript (see (2)).
+
+Don't call methods of passed objects of script API data types outside these two situations, for example:
+
+* inaconstructor
+* during rendering
+
+* in other functions (see (3) and (4))
+
+Custom widget JSON
+«+ Sample Code
+
+{
+
+"methods": {
+"setButtonTextl1": {
+
+"parameters": [
+{"name": "button", "type": "Button"},
+{"name": "text", "type": "string"}
+l,
+"body": "button.setText (text);" // (1) OK
+\y
+"setButtonText2": {
+"parameters": [
+{"name": "button", "type": "Button"},
+{"name": "text", "type": "string"}
+
+Web Component JavaScript
+
+«+ Sample Code
+
+class CustomWidget /* extends ...*/ {
+_button = undefined;
+setButtonText2 (button, text) {
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Best Practices PUBLIC
+
+69
+button.setText (text); // (2) OK
+_button = button;
+setTimeout (() => f{
+this._button.setText (text); // (3) WILL NOT WORK!
+a
+
+}
+handleClick() {
+
+this._button.setText ("Hello!"); // (4) WILL NOT WORK!
+}
+
+12.3. Implementing Property Setter and Getter Methods
+Consistently
+
+Shows you how to implement a pair of property setters and getters.
+
+To implement a pair of property setters and getters, for example set Text and get Text, which can be used like
+in the following example:
+
+«+ Sample Code
+
+customWidget.setText ("Hello");
+var text = customWidget.getText ();
+
+you can choose between two implementation styles:
+
+In the first style, you define the necessary elements (the property and the setter and the getter method) in the
+custom widget JSON. Both methods are implemented in their body properties:
+
+Custom Widget JSON
+
+«+ Sample Code
+
+{
+
+"properties": {
+"text": {"type": "string"}
+\y
+"methods": {
+"setText": {
+"parameters": [{"name": "newText", "type": "string"}],
+"body": "this.text = newText;"”
+\y
+"getText": {
+"returnType": "string",
+"body": "return this.text;”
+
+Written this way, the framework keeps track of the state of text. When the setter method is called, the
+framework implicitly initiates a state change.
+
+In the second style, you define the necessary elements (the property and the setter and getter method) in
+the custom widget JSON and implement them in the Web Component JavaScript. Both methods are defined
+
+SAP Analytics Cloud Custem Widget Developer Guide
+70 PUBLIC Best Practices
+without a body property in the custom widget JSON. They are implemented as native JavaScript functions in
+the Web Component JavaScript:
+
+Custom Widget JSON
+«+ Sample Code
+
+{
+
+"properties": {
+"text": {"type": "string"}
+\y
+"methods": {
+"setText": f{
+"parameters": [{"name": "newText", "type": "string"}],
+\y
+"getText": {
+"returnType": "string"
+}
+
+Web Component JavaScipt
+
+«+ Sample Code
+
+class CustomWidget extends /* ... */ {
+var _text;
+setText (newText) {
+this._text = newText;
+// fire "properties changed"
+this.dispatchEvent (new CustomEvent ("propertiesChanged", {
+detail: {
+properties: {
+text: this._text
+
+De
+}
+getText() {
+
+return this._text;
+}
+
+Written this way, the framework keeps track of the state of text. When the setter method is called, the Web
+Component JavaScript explicitly initiates a state change.
+
+4 Caution
+
+Do not mix those implementation styles when implementing property setters and getters!
+
+For example, do not implement the setter of a property in the first style and the getter of the same property in
+the second style. Strange effects may occur. For example, when running the following sample script with such
+an implementation
+
+«+ Sample Code
+
+customWidget.setText ("Hello");
+var text = customWidget.getText ();
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Best Practices PUBLIC 71
+it is not guaranteed that at the end of this script text has the value "Hello".
+
+@ Note
+
+In the Custom Widget framework there is a separation of concerns about custom widgets: The framework
+handles the property state and the Web Component handles the rendering. For performance reasons,
+
+all property changes are collected by the framework first (this includes the property changes during the
+execution of a script) and only after that, rendering is executed. When mixing the above implementation
+styles of setter and getter methods, the separation between property state handling and rendering
+becomes fuzzy. This can lead to unexpected, for example, outdated, property values.
+
+12.4 Returning Arguments by Value and by Reference
+
+Simple types (string, integer, number, boolean) and script API data types (for example, Button) that are
+passed to script methods are always returned by value, that is, a copy of the argument is returned.
+
+Arrays and simple typed objects (for example, object<string>) that are passed to script methods are
+returned either by reference or by value. It depends on where the script method's implementation is defined:
+
+° lf the script method's implementation is in the body property of the custom widget JSON, then arguments
+of arrays and simple typed objects are returned by reference (the identical argument is returned).
+
+* Ifthe script method's implementation is in a native JavaScript implementation of the Web Component
+JavaScript, then arguments of arrays and simple typed objects are returned by value (a copy of the
+argument is returned).
+
+In the following example, an array that is passed to two script methods is returned either by reference (the
+returned array is the identical array that was passed into the method) or returned by value (the returned array
+is a copy of the array that was passed into the method):
+
+Custom Widget JSON
+«+ Sample Code
+
+{
+
+"methods": {
+"getArrayByRef": {
+
+"parameters": [{"name": "values", "type": "integer[]"}],
+"returnType": "integer[]",
+"body": "return values;”"
+
+\y
+
+"getArrayByValue": {
+"parameters": [{"name": "values", "type": "integer[]"}],
+"returnType": "integer[]”
+
+Web Component JavaScript
+«+ Sample Code
+
+class CustomWidget extends /* ... */ {
+
+SAP Analytics Cloud Custem Widget Developer Guide
+72 PUBLIC Best Practices
+getArrayByValue (values: integer[]) {
+return values; // "values" is not the original, but already a copy
+
+}
+
+Sample Analytics Designer Script
+
+«+ Sample Code
+
+var array = [1, 2, 3];
+
+var resultl = customWidget.getArrayByRef (array) ;
+console.log (array === resultl); // —> true
+
+var result2 = customWidget.getArrayByValue (array) ;
+console.log(array === result2); // —> false
+
+12.5 Custom Types
+
+Here you find a sample of a custom type definition.
+
+This section discusses a sample of a custom type definition (for more information on custom types, see
+section Types Object in chapter Custom Widget JSON Reference [page 16]).
+
+Here is the sample:
+
+«+ Sample Code
+
+"types": {
+"Document": {
+"description": "A document",
+"properties": [
+{
+"name": "name",
+"type": "string",
+"description": "Name of the document",
+"mandatory": true
+}
+]
+\y
+"Book": {
+"extends": "Document",
+"description": "A book document",
+"properties": [
+{
+"name": "bookContentType",
+"type": "BookContentType",
+"description": "Content type of the book",
+"mandatory": true
+\y
+{
+"name": "numberOfPages",
+"type": "integer"
+"description": "Number of pages",
+}
+]
+\y
+"Video": {
+"extends": "Document",
+"description": "A video document",
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Best Practices PUBLIC
+
+73
+"properties": [
+{
+
+"name": "videoContentType",
+"type": "VideoContentType",
+"description": "Content type of the video",
+
+"mandatory": true
+
+"name": "length",
+"type": "integer"
+"description": "Length of footage in seconds",
+
+]
+\y
+"BookContentType": {
+
+"extends": "Enum",
+"description": "A set of values to describe the book content type",
+"properties": [
+"name": "TXT",
+"description": "A book in plain text format”
+\y
+{
+"name": "PDF",
+"description": "A book in PDF format”
+
+]
+\y
+"VideoContentType": {
+
+"extends": "Enum",
+"description": "A set of values to describe the video content type",
+"properties": [
+{
+"name": "AVI",
+"description": "A video in AVI format"
+\y
+{
+"name": "MP4",
+"description": "A video in MP4 format”
+
+@ Note
+
+Note the following points:
+
+* The custom type Document (a custom data structure) has a mandatory property name of type
+string.
+
+* The custom types Book and Video (both custom data structures) extend the type Document. Thus,
+they both have a property name of type st ring that they receive from the type Document.
+
+* The custom type Book has a mandatory bookContentType property, which can contain a value of the
+custom enumeration BookContentType.
+
+° The custom type Book has an optional numberofPages property of type integer.
+
+* The custom type Video has a mandatory videoContent Type property, which can contain a value of
+the custom enumeration VideoContentType.
+
+* The custom type Video has an optional length property of type integer.
+
+SAP Analytics Cloud Custem Widget Developer Guide
+74 PUBLIC Best Practices
+Important Disclaimers and Legal Information
+
+Hyperlinks
+
+Some links are classified by an icon and/or a mouseover text. These links provide additional information.
+About the icons:
+
+® Links with the icon # : You are entering a Web site that is not hosted by SAP. By using such links, you agree (unless expressly stated otherwise in your
+agreements with SAP) to this:
+* — The content of the linked-to site is not SAP documentation. You may not infer any product claims against SAP based on this information.
+* — SAP does not agree or disagree with the content on the linked-to site, nor does SAP warrant the availability and correctness. SAP shall not be liable for any
+damages caused by the use of such content unless damages have been caused by SAP's gross negligence or willful misconduct.
+°
+
+Links with the icon Mii: You are leaving the documentation for that particular SAP product or service and are entering an SAP-hosted Web site. By using
+such links, you agree that (unless expressly stated otherwise in your agreements with SAP) you may not infer any product claims against SAP based on this.
+information.
+
+Videos Hosted on External Platforms
+
+Some videos may point to third-party video hosting platforms. SAP cannot guarantee the future availability of videos stored on these platforms. Furthermore, any
+advertisements or other content hosted on these platforms (for example, suggested videos or by navigating to other videos hosted on the same site), are not within
+the control or responsibility of SAP.
+
+Beta and Other Experimental Features
+
+Experimental features are not part of the officially delivered scope that SAP guarantees for future releases. This means that experimental features may be changed by
+SAP at any time for any reason without notice. Experimental features are not for productive use. You may not demonstrate, test, examine, evaluate or otherwise use
+the experimental features in a live operating environment or with data that has not been sufficiently backed up.
+
+The purpose of experimental features is to get feedback early on, allowing customers and partners to influence the future product accordingly. By providing your
+feedback (e.g. in the SAP Community), you accept that intellectual property rights of the contributions or derivative works shall remain the exclusive property of SAP.
+
+Example Code
+
+Any software coding and/or cade snippets are examples. They are not for productive use. The example code is only intended to better explain and visualize the syntax
+and phrasing rules. SAP does not warrant the correctness and completeness of the example code. SAP shall not be liable for errors or damages caused by the use of
+example code unless damages have been caused by SAP's gross negligence or willful misconduct.
+
+Bias-Free Language
+
+SAP supports a culture of diversity and inclusion. Whenever possible, we use unbiased language in our documentation to refer to people of all cultures, ethnicities,
+genders, and abilities.
+
+SAP Analytics Cloud Custom Widget Developer Guide
+Important Disclaimers and Legal Information PUBLIC 75
+www.sap.com/contactsap
+
+© 2024 SAP SE or an SAP affiliate company. All rights reserved.
+
+No part of this publication may be reproduced or transmitted in any form
+or for any purpose without the express permission of SAP SE or an SAP
+affiliate company. The information contained herein may be changed
+without prior notice.
+
+Some software products marketed by SAP SE and its distributors
+contain proprietary software components of other software vendors.
+National product specifications may vary.
+
+These materials are provided by SAP SE or an SAP affiliate company for
+informational purposes only, without representation or warranty of any
+kind, and SAP or its affiliated companies shall not be liable for errors or
+omissions with respect to the materials. The only warranties for SAP or
+SAP affiliate company products and services are those that are set forth
+in the express warranty statements accompanying such products and
+services, if any. Nothing herein should be construed as constituting an
+additional warranty.
+
+SAP and other SAP products and services mentioned herein as well as
+their respective logos are trademarks or registered trademarks of SAP
+SE (or an SAP affiliate company) in Germany and other countries. All
+other product and service names mentioned are the trademarks of their
+respective companies.
+
+Please see https: /Avww.sap.com/about/legal/trademark.html for
+additional trademark information and notices.
+
+THE BEST RUN

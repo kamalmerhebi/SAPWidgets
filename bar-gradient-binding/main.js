@@ -420,5 +420,5 @@ var getScriptPromisify = (src) => {
     }
   }
 
-  customElements.define('com-sap-sample-echarts-bar-gradient-binding', Main);
+  customElements.define('insightcubes-echarts-bargradientbinding', Main);
 })();

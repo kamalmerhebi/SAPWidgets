@@ -1,0 +1,97 @@
+Extending SAP Analytics Cloud’s Visualization Capability with Apache ECharts
+
+Apache ECharts is a free, powerful, interactive charting and data visualization library. Many intuitive examples can be found on its official website https://echarts.apache.org/examples/en/index.html
+
+Bringing Apache ECharts in SAP Analytics Cloud will extend its visualization capability. In this blog post, I would like to share with you how to quickly add Apache ECharts as custom widgets into SAP Analytics Cloud using the code template.
+
+Here is the demo shows how Apache ECharts looks like in SAP Analytics Cloud.
+
+Copy following code and save it as json
+{
+  "eula": "",
+  "vendor": "SAP",
+  "license": "",
+  "id": "com.sap.sac.sample.echarts.prepared",
+  "version": "1.0.0",
+  "name": "ECharts Prepared",
+  "newInstancePrefix": "EChartPrepared",
+  "description": "A sample custom widget wrapped EChart Prepared",
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "com-sap-sample-echarts-prepared",
+      "url": "http://localhost:3000/echarts/prepared/main.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    }
+  ],
+  "properties": {
+		"width": {
+			"type": "integer",
+			"default": 600
+		},
+		"height": {
+			"type": "integer",
+			"default": 420
+		}
+  },
+  "methods": {
+  },
+  "events": {
+  }
+}
+
+
+Copy following code and save it as js
+var getScriptPromisify = (src) => {
+  return new Promise(resolve => {
+    $.getScript(src, resolve)
+  })
+}
+
+(function () {
+  const prepared = document.createElement('template')
+  prepared.innerHTML = `
+      <style>
+      </style>
+      <div id="root" style="width: 100%; height: 100%;">
+      </div>
+    `
+  class SamplePrepared extends HTMLElement {
+    constructor () {
+      super()
+
+      this._shadowRoot = this.attachShadow({ mode: 'open' })
+      this._shadowRoot.appendChild(prepared.content.cloneNode(true))
+
+      this._root = this._shadowRoot.getElementById('root')
+
+      this._props = {}
+
+      this.render()
+    }
+
+    onCustomWidgetResize (width, height) {
+      this.render()
+    }
+
+    async render () {
+      await getScriptPromisify('https://cdn.bootcdn.net/ajax/libs/echarts/5.0.0/echarts.min.js')
+
+      const chart = echarts.init(this._root)
+      const option = {
+        // https://echarts.apache.org/examples/zh/index.html
+      }
+      chart.setOption(option)
+    }
+  }
+
+  customElements.define('com-sap-sample-echarts-prepared', SamplePrepared)
+})()
+
+
+
+Pick an Apache ECharts example from its official website: https://echarts.apache.org/examples/en/index.html
+
+Copy the code from code snippet of your selected Apache ECharts example, and replace the “option” placeholder in js. 
+Remember to keep the “const” keyword before “option”
