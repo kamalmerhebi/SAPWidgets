@@ -31,34 +31,23 @@ var getScriptPromisify = (src) => {
 
   const parseDataBinding = (dataBinding) => {
     try {
+      // Return empty data structure if no binding
       if (!dataBinding) {
-        console.log('Data binding not yet initialized');
         return { data: [], dataAxis: [] };
       }
 
-      if (typeof dataBinding !== 'object') {
-        console.warn('Data binding is not an object:', dataBinding);
+      // Get the data safely using optional chaining
+      const bindingData = dataBinding?.data;
+      const metadata = dataBinding?.metadata;
+
+      if (!bindingData || !Array.isArray(bindingData)) {
         return { data: [], dataAxis: [] };
       }
 
-      // During initialization, data might not be available yet
-      if (!dataBinding.data) {
-        console.log('Data not yet available in binding');
-        return { data: [], dataAxis: [] };
-      }
-
-      const data = dataBinding.data;
-      const metadata = dataBinding.metadata;
-
-      if (!Array.isArray(data)) {
-        console.warn('Data is not an array:', data);
-        return { data: [], dataAxis: [] };
-      }
-
-      const { dimensions, measures } = parseMetadata(metadata);
+      // Safely parse metadata
+      const { dimensions = [], measures = [] } = parseMetadata(metadata);
 
       if (!dimensions.length || !measures.length) {
-        console.warn('No dimensions or measures found in data binding');
         return { data: [], dataAxis: [] };
       }
 
@@ -70,13 +59,13 @@ var getScriptPromisify = (src) => {
         key: measure.key
       }));
 
-      data.forEach(row => {
+      bindingData.forEach(row => {
         if (!row) return;
-        // dimension
+        
         try {
           const labels = dimensions.map(dimension => {
             const dimData = row[dimension.key];
-            return dimData && dimData.label ? dimData.label : '';
+            return dimData?.label || '';
           }).filter(label => label !== '');
 
           if (labels.length > 0) {
@@ -84,115 +73,32 @@ var getScriptPromisify = (src) => {
             // measures
             series.forEach(series => {
               const measureData = row[series.key];
-              series.data.push(measureData && measureData.raw !== undefined ? measureData.raw : 0);
+              series.data.push(measureData?.raw ?? 0);
             });
           }
         } catch (err) {
-          console.warn('Error processing row:', row, err);
+          console.log('Skipping invalid row:', err);
         }
       });
 
-      if (!categoryData.length || !series[0].data.length) {
-        console.warn('No valid data processed');
-        return { data: [], dataAxis: [] };
-      }
-
-      return { data: series[0].data, dataAxis: categoryData };
+      return { 
+        data: series[0]?.data || [], 
+        dataAxis: categoryData 
+      };
     } catch (err) {
-      console.error('Error in parseDataBinding:', err);
+      console.log('Error parsing data binding:', err);
       return { data: [], dataAxis: [] };
     }
   };
 
   const getOption = (dataBinding) => {
-    try {
-      const { data, dataAxis } = parseDataBinding(dataBinding);
-      
-      if (!data.length) {
-        return {
-          option: {
-            title: {
-              text: 'No data available',
-              left: 'center',
-              top: 'center'
-            }
-          },
-          data: [],
-          dataAxis: []
-        };
-      }
-
-      let yMax = 0;
-      data.forEach(y => {
-        yMax = Math.max(y || 0, yMax);
-      });
-      const dataShadow = Array(data.length).fill(yMax);
-
-      const option = {
-        title: {
-          text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
-        },
-        xAxis: {
-          data: dataAxis,
-          axisLabel: {
-            inside: true,
-            color: '#000'
-          },
-          axisTick: {
-            show: false
-          },
-          axisLine: {
-            show: false
-          },
-          z: 10
-        },
-        yAxis: {
-          axisLine: {
-            show: false
-          },
-          axisTick: {
-            show: false
-          },
-          axisLabel: {
-            color: '#999'
-          }
-        },
-        dataZoom: [
-          {
-            type: 'inside'
-          }
-        ],
-        series: [
-          {
-            type: 'bar',
-            showBackground: true,
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#83bff6' },
-                { offset: 0.5, color: '#188df0' },
-                { offset: 1, color: '#188df0' }
-              ])
-            },
-            emphasis: {
-              itemStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: '#2378f7' },
-                  { offset: 0.7, color: '#2378f7' },
-                  { offset: 1, color: '#83bff6' }
-                ])
-              }
-            },
-            data: data
-          }
-        ]
-      };
-      return { option, data, dataAxis };
-    } catch (err) {
-      console.error('Error in getOption:', err);
+    const { data, dataAxis } = parseDataBinding(dataBinding);
+    
+    if (!data?.length) {
       return {
         option: {
           title: {
-            text: 'Error loading chart',
+            text: 'Waiting for data...',
             left: 'center',
             top: 'center'
           }
@@ -201,6 +107,69 @@ var getScriptPromisify = (src) => {
         dataAxis: []
       };
     }
+
+    // Calculate max value safely
+    const yMax = data.reduce((max, val) => Math.max(max, val || 0), 0);
+
+    const option = {
+      title: {
+        text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
+      },
+      xAxis: {
+        data: dataAxis,
+        axisLabel: {
+          inside: true,
+          color: '#000'
+        },
+        axisTick: {
+          show: false
+        },
+        axisLine: {
+          show: false
+        },
+        z: 10
+      },
+      yAxis: {
+        axisLine: {
+          show: false
+        },
+        axisTick: {
+          show: false
+        },
+        axisLabel: {
+          color: '#999'
+        }
+      },
+      dataZoom: [
+        {
+          type: 'inside'
+        }
+      ],
+      series: [
+        {
+          type: 'bar',
+          showBackground: true,
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#83bff6' },
+              { offset: 0.5, color: '#188df0' },
+              { offset: 1, color: '#188df0' }
+            ])
+          },
+          emphasis: {
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#2378f7' },
+                { offset: 0.7, color: '#2378f7' },
+                { offset: 1, color: '#83bff6' }
+              ])
+            }
+          },
+          data: data
+        }
+      ]
+    };
+    return { option, data, dataAxis };
   };
 
   const template = document.createElement('template')
