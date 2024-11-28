@@ -45,7 +45,7 @@ var getScriptPromisify = (src) => {
     })
     return { data: series[0].data, dataAxis: categoryData }
   }
-  const getOption = (dataBinding) => {
+  const getOption = (dataBinding, props) => {
     const { data, dataAxis } = parseDataBinding(dataBinding)
     let yMax = 0
     data.forEach(y => {
@@ -57,7 +57,11 @@ var getScriptPromisify = (src) => {
     }
     const option = {
       title: {
-        text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
+        text: props.title || 'Feature Sample: Gradient Color, Shadow, Click Zoom',
+        textStyle: {
+          fontSize: props.titleFontSize || 18,
+          color: props.titleColor || '#333333'
+        }
       },
       xAxis: {
         data: dataAxis,
@@ -81,32 +85,34 @@ var getScriptPromisify = (src) => {
           show: false
         },
         axisLabel: {
-          formatter: '{value} Million',
-          color: '#999'
+          formatter: props.axisLabelFormat || '{value} Million',
+          color: props.axisLabelColor || '#999'
         }
       },
-      dataZoom: [
+      dataZoom: props.enableZoom ? [
         {
           type: 'inside'
         }
-      ],
+      ] : [],
       series: [
         {
           type: 'bar',
           showBackground: true,
+          barWidth: props.barWidth || 40,
+          barGap: props.barGap + '%' || '30%',
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#83bff6' },
-              { offset: 0.5, color: '#188df0' },
-              { offset: 1, color: '#188df0' }
+              { offset: 0, color: props.gradientStartColor || '#83bff6' },
+              { offset: 0.5, color: props.gradientMiddleColor || '#188df0' },
+              { offset: 1, color: props.gradientEndColor || '#188df0' }
             ])
           },
           emphasis: {
             itemStyle: {
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#2378f7' },
-                { offset: 0.7, color: '#2378f7' },
-                { offset: 1, color: '#83bff6' }
+                { offset: 0, color: props.gradientStartColor || '#2378f7' },
+                { offset: 0.7, color: props.gradientMiddleColor || '#2378f7' },
+                { offset: 1, color: props.gradientEndColor || '#83bff6' }
               ])
             }
           },
@@ -127,14 +133,176 @@ var getScriptPromisify = (src) => {
   class Main extends HTMLElement {
     constructor () {
       super()
-
       this._shadowRoot = this.attachShadow({ mode: 'open' })
       this._shadowRoot.appendChild(template.content.cloneNode(true))
-
       this._root = this._shadowRoot.getElementById('root')
-
       this._props = {}
+      this.render()
+    }
 
+    // Getters and setters for properties
+    get title() { return this._props.title }
+    set title(value) { 
+      this._props.title = value
+      this.render()
+    }
+
+    getTitle() {
+      return this._props.title
+    }
+
+    setTitle(value) {
+      this._props.title = value
+      this.render()
+    }
+
+    get titleFontSize() { return this._props.titleFontSize }
+    set titleFontSize(value) { 
+      this._props.titleFontSize = value
+      this.render()
+    }
+
+    getTitleFontSize() {
+      return this._props.titleFontSize
+    }
+
+    setTitleFontSize(value) {
+      this._props.titleFontSize = value
+      this.render()
+    }
+
+    get titleColor() { return this._props.titleColor }
+    set titleColor(value) { 
+      this._props.titleColor = value
+      this.render()
+    }
+
+    getTitleColor() {
+      return this._props.titleColor
+    }
+
+    setTitleColor(value) {
+      this._props.titleColor = value
+      this.render()
+    }
+
+    get axisLabelFormat() { return this._props.axisLabelFormat }
+    set axisLabelFormat(value) { 
+      this._props.axisLabelFormat = value
+      this.render()
+    }
+
+    getAxisLabelFormat() {
+      return this._props.axisLabelFormat
+    }
+
+    setAxisLabelFormat(value) {
+      this._props.axisLabelFormat = value
+      this.render()
+    }
+
+    get axisLabelColor() { return this._props.axisLabelColor }
+    set axisLabelColor(value) { 
+      this._props.axisLabelColor = value
+      this.render()
+    }
+
+    getAxisLabelColor() {
+      return this._props.axisLabelColor
+    }
+
+    setAxisLabelColor(value) {
+      this._props.axisLabelColor = value
+      this.render()
+    }
+
+    get enableZoom() { return this._props.enableZoom }
+    set enableZoom(value) { 
+      this._props.enableZoom = value
+      this.render()
+    }
+
+    getEnableZoom() {
+      return this._props.enableZoom
+    }
+
+    setEnableZoom(value) {
+      this._props.enableZoom = value
+      this.render()
+    }
+
+    get barWidth() { return this._props.barWidth }
+    set barWidth(value) { 
+      this._props.barWidth = value
+      this.render()
+    }
+
+    getBarWidth() {
+      return this._props.barWidth
+    }
+
+    setBarWidth(value) {
+      this._props.barWidth = value
+      this.render()
+    }
+
+    get barGap() { return this._props.barGap }
+    set barGap(value) { 
+      this._props.barGap = value
+      this.render()
+    }
+
+    getBarGap() {
+      return this._props.barGap
+    }
+
+    setBarGap(value) {
+      this._props.barGap = value
+      this.render()
+    }
+
+    get gradientStartColor() { return this._props.gradientStartColor }
+    set gradientStartColor(value) { 
+      this._props.gradientStartColor = value
+      this.render()
+    }
+
+    getGradientStartColor() {
+      return this._props.gradientStartColor
+    }
+
+    setGradientStartColor(value) {
+      this._props.gradientStartColor = value
+      this.render()
+    }
+
+    get gradientMiddleColor() { return this._props.gradientMiddleColor }
+    set gradientMiddleColor(value) { 
+      this._props.gradientMiddleColor = value
+      this.render()
+    }
+
+    getGradientMiddleColor() {
+      return this._props.gradientMiddleColor
+    }
+
+    setGradientMiddleColor(value) {
+      this._props.gradientMiddleColor = value
+      this.render()
+    }
+
+    get gradientEndColor() { return this._props.gradientEndColor }
+    set gradientEndColor(value) { 
+      this._props.gradientEndColor = value
+      this.render()
+    }
+
+    getGradientEndColor() {
+      return this._props.gradientEndColor
+    }
+
+    setGradientEndColor(value) {
+      this._props.gradientEndColor = value
       this.render()
     }
 
@@ -143,6 +311,7 @@ var getScriptPromisify = (src) => {
     }
 
     onCustomWidgetAfterUpdate (changedProps) {
+      Object.assign(this._props, changedProps)
       this.render()
     }
 
@@ -157,20 +326,22 @@ var getScriptPromisify = (src) => {
       if (!this.myDataBinding || this.myDataBinding.state !== 'success') { return }
 
       const myChart = this._myChart = echarts.init(this._root)
-      const { option, data, dataAxis } = getOption(this.myDataBinding)
+      const { option, data, dataAxis } = getOption(this.myDataBinding, this._props)
       myChart.setOption(option)
 
-      // Enable data zoom when user click bar.
-      const zoomSize = 6
-      myChart.on('click', function (params) {
-        console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)])
-        myChart.dispatchAction({
-          type: 'dataZoom',
-          startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
-          endValue:
-            dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+      // Enable data zoom when user click bar only if zoom is enabled
+      if (this._props.enableZoom) {
+        const zoomSize = 6
+        myChart.on('click', function (params) {
+          console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)])
+          myChart.dispatchAction({
+            type: 'dataZoom',
+            startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
+            endValue:
+              dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+          })
         })
-      })
+      }
     }
   }
 
