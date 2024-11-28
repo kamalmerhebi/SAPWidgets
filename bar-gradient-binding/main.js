@@ -366,5 +366,5 @@ var getScriptPromisify = (src) => {
     }
   }
 
-  customElements.define('com-insightcubes-sac-bargradient', Main)
+  customElements.define('com-insightcubes-sac-bargradient_1.x', Main)
 })()
