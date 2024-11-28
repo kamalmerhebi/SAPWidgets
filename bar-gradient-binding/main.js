@@ -209,6 +209,7 @@ var getScriptPromisify = (src) => {
       this._props = {}
       this._initialized = false
       this._myChart = null
+      this.myDataBinding = null
     }
 
     async connectedCallback() {
@@ -237,12 +238,20 @@ var getScriptPromisify = (src) => {
       }
     }
 
-    onCustomWidgetAfterUpdate (changedProps) {
-      this.render()
+    onCustomWidgetAfterUpdate(changedProps) {
+      console.log('onCustomWidgetAfterUpdate called with:', changedProps);
+      if (changedProps.myDataBinding) {
+        console.log('Data binding updated:', changedProps.myDataBinding);
+        this.myDataBinding = changedProps.myDataBinding;
+      }
+      this.render();
     }
 
     async render () {
       try {
+        console.log('Render called. Initialization state:', this._initialized);
+        console.log('Current data binding:', this.myDataBinding);
+        
         if (!this._initialized) {
           console.warn('Chart not initialized yet');
           return;
