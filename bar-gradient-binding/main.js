@@ -16,89 +16,171 @@ var getScriptPromisify = (src) => {
       return { dimensions: [], measures: [], dimensionsMap: {}, measuresMap: {} };
     }
     const { dimensions: dimensionsMap = {}, mainStructureMembers: measuresMap = {} } = metadata;
-    const dimensions = [];
-    for (const key in dimensionsMap) {
-      const dimension = dimensionsMap[key];
-      dimensions.push({ key, ...dimension });
-    }
-    const measures = [];
-    for (const key in measuresMap) {
-      const measure = measuresMap[key];
-      measures.push({ key, ...measure });
-    }
+    const dimensions = Object.entries(dimensionsMap).map(([key, dimension]) => ({ key, ...dimension }));
+    const measures = Object.entries(measuresMap).map(([key, measure]) => ({ key, ...measure }));
     return { dimensions, measures, dimensionsMap, measuresMap };
   };
 
   const parseDataBinding = (dataBinding) => {
     try {
-      // Return empty data structure if no binding
-      if (!dataBinding) {
+      console.log('Parsing data binding:', JSON.stringify(dataBinding));
+
+      if (!dataBinding || !dataBinding.data) {
+        console.warn('Invalid or missing data binding:', dataBinding);
         return { data: [], dataAxis: [] };
       }
 
-      // Get the data safely using optional chaining
-      const bindingData = dataBinding?.data;
-      const metadata = dataBinding?.metadata;
+      const { data: bindingData, metadata } = dataBinding;
 
-      if (!bindingData || !Array.isArray(bindingData)) {
+      if (!Array.isArray(bindingData)) {
+        console.warn('Data binding "data" is not an array:', bindingData);
         return { data: [], dataAxis: [] };
       }
 
-      // Safely parse metadata
       const { dimensions = [], measures = [] } = parseMetadata(metadata);
 
       if (!dimensions.length || !measures.length) {
+        console.warn('No dimensions or measures found');
         return { data: [], dataAxis: [] };
       }
 
-      // dimension
       const categoryData = [];
-      // measures
       const series = measures.map(measure => ({
         data: [],
         key: measure.key
       }));
 
-      bindingData.forEach(row => {
-        if (!row) return;
-        
+      bindingData.forEach((row, index) => {
+        if (!row) {
+          console.warn(`Skipping null/undefined row at index ${index}`);
+          return;
+        }
+
         try {
           const labels = dimensions.map(dimension => {
             const dimData = row[dimension.key];
-            return dimData?.label || '';
+            return dimData && typeof dimData === 'object' ? dimData.label || '' : '';
           }).filter(label => label !== '');
 
           if (labels.length > 0) {
             categoryData.push(labels.join('/'));
-            // measures
-            series.forEach(series => {
-              const measureData = row[series.key];
-              series.data.push(measureData?.raw ?? 0);
+            series.forEach(seriesItem => {
+              const measureData = row[seriesItem.key];
+              const value = measureData && typeof measureData === 'object' ? 
+                (measureData.raw !== undefined ? measureData.raw : 0) : 0;
+              seriesItem.data.push(value);
             });
+          } else {
+            console.warn(`No valid labels found for row ${index}`);
           }
         } catch (err) {
-          console.log('Skipping invalid row:', err);
+          console.warn(`Error processing row ${index}:`, err);
         }
       });
 
+      if (!series[0] || !Array.isArray(series[0].data)) {
+        console.warn('No valid series data found');
+        return { data: [], dataAxis: [] };
+      }
+
       return { 
-        data: series[0]?.data || [], 
+        data: series[0].data, 
         dataAxis: categoryData 
       };
     } catch (err) {
-      console.log('Error parsing data binding:', err);
+      console.error('Error parsing data binding:', err);
       return { data: [], dataAxis: [] };
     }
   };
 
   const getOption = (dataBinding) => {
-    const { data, dataAxis } = parseDataBinding(dataBinding);
-    
-    if (!data?.length) {
+    try {
+      console.log('Processing data binding in getOption:', dataBinding ? 'present' : 'missing');
+      
+      const { data, dataAxis } = parseDataBinding(dataBinding);
+      
+      if (!Array.isArray(data) || !data.length) {
+        console.log('No valid data available for chart');
+        return {
+          option: {
+            title: {
+              text: 'Waiting for data...',
+              left: 'center',
+              top: 'center'
+            }
+          },
+          data: [],
+          dataAxis: []
+        };
+      }
+
+      const yMax = data.reduce((max, val) => Math.max(max, Number(val) || 0), 0);
+
+      const option = {
+        title: {
+          text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
+        },
+        xAxis: {
+          data: dataAxis,
+          axisLabel: {
+            inside: true,
+            color: '#000'
+          },
+          axisTick: {
+            show: false
+          },
+          axisLine: {
+            show: false
+          },
+          z: 10
+        },
+        yAxis: {
+          axisLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          },
+          axisLabel: {
+            color: '#999'
+          }
+        },
+        dataZoom: [
+          {
+            type: 'inside'
+          }
+        ],
+        series: [
+          {
+            type: 'bar',
+            showBackground: true,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#83bff6' },
+                { offset: 0.5, color: '#188df0' },
+                { offset: 1, color: '#188df0' }
+              ])
+            },
+            emphasis: {
+              itemStyle: {
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                  { offset: 0, color: '#2378f7' },
+                  { offset: 0.7, color: '#2378f7' },
+                  { offset: 1, color: '#83bff6' }
+                ])
+              }
+            },
+            data: data
+          }
+        ]
+      };
+      return { option, data, dataAxis };
+    } catch (err) {
+      console.error('Error in getOption:', err);
       return {
         option: {
           title: {
-            text: 'Waiting for data...',
+            text: 'Error processing data',
             left: 'center',
             top: 'center'
           }
@@ -107,69 +189,6 @@ var getScriptPromisify = (src) => {
         dataAxis: []
       };
     }
-
-    // Calculate max value safely
-    const yMax = data.reduce((max, val) => Math.max(max, val || 0), 0);
-
-    const option = {
-      title: {
-        text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
-      },
-      xAxis: {
-        data: dataAxis,
-        axisLabel: {
-          inside: true,
-          color: '#000'
-        },
-        axisTick: {
-          show: false
-        },
-        axisLine: {
-          show: false
-        },
-        z: 10
-      },
-      yAxis: {
-        axisLine: {
-          show: false
-        },
-        axisTick: {
-          show: false
-        },
-        axisLabel: {
-          color: '#999'
-        }
-      },
-      dataZoom: [
-        {
-          type: 'inside'
-        }
-      ],
-      series: [
-        {
-          type: 'bar',
-          showBackground: true,
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#83bff6' },
-              { offset: 0.5, color: '#188df0' },
-              { offset: 1, color: '#188df0' }
-            ])
-          },
-          emphasis: {
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#2378f7' },
-                { offset: 0.7, color: '#2378f7' },
-                { offset: 1, color: '#83bff6' }
-              ])
-            }
-          },
-          data: data
-        }
-      ]
-    };
-    return { option, data, dataAxis };
   };
 
   const template = document.createElement('template')
@@ -221,7 +240,6 @@ var getScriptPromisify = (src) => {
     onCustomWidgetAfterUpdate(changedProps) {
       console.log('onCustomWidgetAfterUpdate called with:', changedProps);
       
-      // Access the data binding from the component's properties
       const dataBinding = this.myDataBinding || changedProps.myDataBinding;
       console.log('Current data binding state:', dataBinding);
       
@@ -230,13 +248,11 @@ var getScriptPromisify = (src) => {
         console.log('Updated data binding:', this.myDataBinding);
       }
       
-      // During initialization, we might get called before data is ready
       if (!this._initialized) {
         console.log('Widget not fully initialized yet, deferring render');
         return;
       }
       
-      // Only render if we have data
       if (this.myDataBinding && this.myDataBinding.data) {
         this.render();
       } else {
@@ -279,7 +295,6 @@ var getScriptPromisify = (src) => {
 
         myChart.setOption(option);
 
-        // Enable data zoom when user click bar.
         const zoomSize = 6;
         myChart.on('click', (params) => {
           const startIdx = Math.max(params.dataIndex - zoomSize / 2, 0);
