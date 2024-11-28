@@ -93,5 +93,7 @@ var getScriptPromisify = (src) => {
 
 Pick an Apache ECharts example from its official website: https://echarts.apache.org/examples/en/index.html
 
-Copy the code from code snippet of your selected Apache ECharts example, and replace the “option” placeholder in js. 
+Copy the code from code snippet of your selected Apache ECharts example, and replace the “option” placeholder in js.
 Remember to keep the “const” keyword before “option”
+
+chart configuration: https://echarts.apache.org/en/option.html#title

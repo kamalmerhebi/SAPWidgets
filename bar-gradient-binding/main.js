@@ -9,7 +9,7 @@ var getScriptPromisify = (src) => {
   });
 };
 
-(function() {
+(function () {
   const showError = (root, message) => {
     root.innerHTML = `
       <div class="error-container">
@@ -84,7 +84,7 @@ var getScriptPromisify = (src) => {
             categoryData.push(labels.join('/'));
             series.forEach(seriesItem => {
               const measureData = row[seriesItem.key];
-              const value = measureData && typeof measureData === 'object' ? 
+              const value = measureData && typeof measureData === 'object' ?
                 (measureData.raw !== undefined ? measureData.raw : 0) : 0;
               seriesItem.data.push(value);
             });
@@ -101,9 +101,9 @@ var getScriptPromisify = (src) => {
         return { data: [], dataAxis: [] };
       }
 
-      return { 
-        data: series[0].data, 
-        dataAxis: categoryData 
+      return {
+        data: series[0].data,
+        dataAxis: categoryData
       };
     } catch (err) {
       console.error('Error parsing data binding:', err);
@@ -114,9 +114,9 @@ var getScriptPromisify = (src) => {
   const getOption = (dataBinding) => {
     try {
       console.log('Processing data binding in getOption:', dataBinding ? 'present' : 'missing');
-      
+
       const { data, dataAxis } = parseDataBinding(dataBinding);
-      
+
       if (!Array.isArray(data) || !data.length) {
         console.log('No valid data available for chart');
         return {
@@ -347,7 +347,7 @@ var getScriptPromisify = (src) => {
         const zoomSize = 6;
         const startIdx = Math.max(params.dataIndex - zoomSize / 2, 0);
         const endIdx = Math.min(params.dataIndex + zoomSize / 2, params.data.length - 1);
-        
+
         this._myChart.dispatchAction({
           type: 'dataZoom',
           startValue: params.name,
@@ -364,20 +364,20 @@ var getScriptPromisify = (src) => {
 
     onCustomWidgetAfterUpdate(changedProps) {
       console.log('onCustomWidgetAfterUpdate called with:', changedProps);
-      
+
       const dataBinding = this.myDataBinding || changedProps.myDataBinding;
       console.log('Current data binding state:', dataBinding);
-      
+
       if (dataBinding) {
         this.myDataBinding = dataBinding;
         console.log('Updated data binding:', this.myDataBinding);
       }
-      
+
       if (!this._initialized) {
         console.log('Widget not fully initialized yet, deferring render');
         return;
       }
-      
+
       this.debouncedRender();
     }
 
@@ -385,12 +385,12 @@ var getScriptPromisify = (src) => {
       try {
         console.log('Render called. Initialization state:', this._initialized);
         console.log('Current data binding:', this.myDataBinding);
-        
+
         if (!this._initialized) {
           console.log('Chart not initialized yet, skipping render');
           return;
         }
-        
+
         if (this._myChart) {
           this._myChart.dispose();
           this._myChart = null;
@@ -404,7 +404,7 @@ var getScriptPromisify = (src) => {
 
         const myChart = this._myChart = echarts.init(this._root);
         const { option, data, dataAxis } = getOption(this.myDataBinding);
-        
+
         if (!data.length) {
           console.log('No data available yet');
           showError(this._root, 'No data available');

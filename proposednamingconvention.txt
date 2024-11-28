@@ -1,0 +1,69 @@
+{
+    "_metadata": {
+        "schemaVersion": "1.0.0",
+        "type": "SAC_WIDGET"
+    },
+    "identity": {
+        "vendor": {
+            "name": "InsightCubes",
+            "namespace": "insightcubes"
+        },
+        "widget": {
+            "id": "insightcubes.echarts.bargradientbinding",
+            "name": "ECharts Bar Gradient Binding",
+            "version": "1.0.1",
+            "prefix": "EChartsBarGradientBinding"
+        }
+    },
+    "capabilities": {
+        "mobile": true,
+        "export": true
+    },
+    "resources": {
+        "cdn": {
+            "provider": "jsdelivr",
+            "baseUrl": "https://cdn.jsdelivr.net",
+            "repository": {
+                "platform": "github",
+                "owner": "kamalmerhebi",
+                "name": "SAPWidgets",
+                "branch": "main"
+            }
+        },
+        "dependencies": {
+            "external": [
+                {
+                    "name": "echarts",
+                    "version": "5.5.1",
+                    "url": "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"
+                }
+            ]
+        }
+    },
+    "components": {
+        "webComponents": [
+            {
+                "role": "main",
+                "definition": {
+                    "tagPrefix": "insightcubes",
+                    "tagName": "echarts-bargradientbinding",
+                    "fullTag": "insightcubes-echarts-bargradientbinding"
+                },
+                "source": {
+                    "type": "cdn",
+                    "file": "bar-gradient-binding/main.js",
+                    "fullUrl": "${resources.cdn.baseUrl}/gh/${resources.cdn.repository.owner}/${resources.cdn.repository.name}@${resources.cdn.repository.branch}/bar-gradient-binding/main.js",
+                    "integrity": "",
+                    "ignoreIntegrity": true
+                }
+            }
+        ]
+    },
+    "ui": {
+        "icon": {
+            "type": "base64",
+            "data": "data:image/png;base64,..."
+        },
+        "description": "Bar chart with gradient colors and zoom functionality"
+    }
+}
