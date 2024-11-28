@@ -1,40 +1,96 @@
-# SAP ANALYTICS CLOUD - CUSTOM WIDGET SAMPLES
-<!-- Please include descriptive title -->
+# InsightCubes SAP Analytics Cloud Custom Widgets
 
-<!--- Register repository https://api.reuse.software/register, then add REUSE badge:
-[![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/REPO-NAME)](https://api.reuse.software/info/github.com/SAP-samples/REPO-NAME)
--->
+A collection of enhanced and rebranded custom widgets for SAP Analytics Cloud (SAC), optimized for modern analytics applications.
 
-## Disclaimer
-This repository, which hosts Custom Widget Samples intended for use within your Analytical Application or the new Optimized Story Experience, is provided by SAP for testing purposes.
- 
-While we are pleased to share this content with our customers and partners, please note that SAP has no obligation to provide support or maintenance for the samples contained in this repository. Users are solely responsible for their use of these samples.
- 
-Furthermore, it is crucial to check and thoroughly read the licenses of the third-party libraries used within our Custom Widgets before usage. By using the samples in this repository, you acknowledge that you understand and agree to abide by all terms and conditions set forth in these licenses.
- 
-Please use this repository responsibly and at your own risk.
+## Overview
+
+This repository contains a suite of custom widgets designed to extend the visualization capabilities of SAP Analytics Cloud. Each widget has been carefully standardized, improved, and rebranded for the InsightCubes platform.
+
+## Widgets Collection
+
+### Chart Widgets
+- **Bar Gradient Chart**: Enhanced bar chart with gradient effects and configurable properties
+- **Custom Pie Chart**: Customizable pie chart with advanced styling options
+- **Funnel Chart**: Interactive funnel visualization
+- **Gauge Grade**: Configurable gauge chart with grading system
+- **Half Donut**: Specialized half donut chart
+- **KPI Ring**: Key Performance Indicator visualization
+- **Line Chart**: Advanced line chart with multiple options
+- **Nested Pie**: Multi-level pie chart visualization
+- **Pareto Chart**: Combined bar and line chart for Pareto analysis
+- **Sankey Chart**: Flow visualization diagram
+- **Sunburst Chart**: Hierarchical data visualization
+- **Tree Chart**: Hierarchical structure visualization
+- **Word Cloud**: Text data visualization
+
+### Utility Widgets
+- **File Upload**: Advanced file upload functionality for SAC
+
+## Features
+
+- Modern, consistent design across all widgets
+- Enhanced configurability and customization options
+- Standardized naming conventions and file structure
+- Optimized for SAC's Data Binding capabilities
+- Compatible with Optimized Story Experience
 
 ## Requirements
-All the exisiting Custom Widget Samples are developed with the new property: Data Binding and works ONLY if your optimized view mode (OVM) is enabled within Analytics Designer or with the Optimized and Unified Story Experience.
 
-## Download and Installation
-Developers/Users can download the Custom Widgets files (JSON/JavaScript) and host them into their favorite cloud hosting service.
+- SAP Analytics Cloud environment
+- Optimized View Mode (OVM) enabled
+- Modern web browser with ECMAScript 6+ support
 
-See how to host the custom widgets in SAC [here](https://community.sap.com/t5/technology-blogs-by-sap/hosting-and-uploading-custom-widgets-resource-files-into-sap-analytics/ba-p/13563064).
+## Installation
 
-See how to host the custom widgets in GitHub [here](https://community.sap.com/t5/technology-blogs-by-sap/hosting-sap-analytics-cloud-custom-widgets-into-github/ba-p/13566633).
+1. Download the desired widget files (JSON and JavaScript)
+2. Host the files in your preferred cloud hosting service
+3. Add the widget to your SAC environment using the hosted URLs
+4. Configure the widget properties as needed
 
-Also a GitHub release has been created that includes all Custom Widgets in one file for a convenient download.
+## Usage
 
-## Known Issues
-If you are planning to host the custom widget within different GitHub repository or different web server, don't forget to change the path to the web componenet files in the JSON file. 
+Each widget includes:
+- Configuration JSON file
+- Main JavaScript implementation
+- Optional styling file
+- Documentation with examples
 
-## How to obtain support
-You can send an email to [Marouene Ferchichi](mailto:m.ferchichi@sap.com).
+For detailed usage instructions, refer to each widget's individual documentation.
 
-Check out this Blog in order to know more about the Custom Widget Samples available in this GitHub repository 
+## Development
 
-https://community.sap.com/t5/technology-blogs-by-sap/sap-analytics-cloud-custom-widget-amp-widget-add-ons-samples-preview/ba-p/13585313
+See [DEVELOPMENT.md](./DEVELOPMENT.md) for:
+- Development workflow
+- Branch strategy
+- Testing guidelines
+- Release process
+- Best practices
+
+## Version Control
+
+All widgets follow semantic versioning (MAJOR.MINOR.PATCH):
+- MAJOR: Breaking changes
+- MINOR: New features (backward compatible)
+- PATCH: Bug fixes (backward compatible)
+
+## Support
+
+For support and feature requests:
+1. Check the widget's documentation
+2. Review existing GitHub issues
+3. Create a new issue with detailed information
 
 ## Contributing
-If you wish to contribute code, offer fixes or improvements, please send a pull request. Due to legal reasons, contributors will be asked to accept a DCO when they create the first pull request to this project. This happens in an automated fashion during the submission process. SAP uses [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Create a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+These widgets are enhanced versions of SAP sample widgets, optimized and rebranded for the InsightCubes platform.
