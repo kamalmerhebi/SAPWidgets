@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.0.3] - 2024-01-09
+
+### Added
+- Loading state management with visual feedback
+- Enhanced error visualization with styled error messages
+- Comprehensive data validation system
+- Debounced rendering for better performance
+- ResizeObserver for automatic chart resizing
+- Enhanced chart options (tooltips, toolbox, save feature)
+- Chart click event handling with zoom functionality
+- Memory management and cleanup system
+
+### Enhanced
+- Improved error handling with user-friendly messages
+- Better state management during widget lifecycle
+- Enhanced chart initialization process
+- Added defensive programming throughout the code
+- Improved data binding validation
+
 ## [1.0.2] - 2024-01-09
 
 ### Enhanced
