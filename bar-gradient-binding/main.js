@@ -1,6 +1,6 @@
 var getScriptPromisify = (src) => {
-  return new Promise(resolve => {
-    $.getScript(src, resolve)
+  return new Promise((resolve, reject) => {
+    $.getScript(src, resolve).fail(() => reject(`Error loading script: ${src}`))
   })
 }
 
@@ -57,7 +57,7 @@ var getScriptPromisify = (src) => {
     }
     const option = {
       title: {
-        text: props.title || 'Feature Sample: Gradient Color, Shadow, Click Zoom',
+        text: props.title || 'Bar Gradient',
         textStyle: {
           fontSize: props.titleFontSize || 18,
           color: props.titleColor || '#333333'
@@ -136,7 +136,22 @@ var getScriptPromisify = (src) => {
       this._shadowRoot = this.attachShadow({ mode: 'open' })
       this._shadowRoot.appendChild(template.content.cloneNode(true))
       this._root = this._shadowRoot.getElementById('root')
-      this._props = {}
+      
+      // Initialize properties with defaults
+      this._props = {
+        title: 'Bar Gradient',
+        titleFontSize: 18,
+        titleColor: '#333333',
+        axisLabelFormat: '{value} Million',
+        axisLabelColor: '#999999',
+        enableZoom: true,
+        barWidth: 40,
+        barGap: 30,
+        gradientStartColor: '#83bff6',
+        gradientMiddleColor: '#188df0',
+        gradientEndColor: '#188df0'
+      }
+      
       this.render()
     }
 
@@ -316,34 +331,40 @@ var getScriptPromisify = (src) => {
     }
 
     async render () {
-      if (!window.echarts) {
-        await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js')
-      }
+      try {
+        if (!window.echarts) {
+          await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js')
+        }
 
-      if (this._myChart) {
-        echarts.dispose(this._myChart)
-      }
-      if (!this.myDataBinding || this.myDataBinding.state !== 'success') { return }
+        if (this._myChart) {
+          echarts.dispose(this._myChart)
+        }
+        
+        if (!this.myDataBinding || this.myDataBinding.state !== 'success') { 
+          console.warn('Bar Gradient: No data binding or unsuccessful data state')
+          return 
+        }
 
-      const myChart = this._myChart = echarts.init(this._root)
-      const { option, data, dataAxis } = getOption(this.myDataBinding, this._props)
-      myChart.setOption(option)
+        const myChart = this._myChart = echarts.init(this._root)
+        const { option, data, dataAxis } = getOption(this.myDataBinding, this._props)
+        myChart.setOption(option)
 
-      // Enable data zoom when user click bar only if zoom is enabled
-      if (this._props.enableZoom) {
-        const zoomSize = 6
-        myChart.on('click', function (params) {
-          console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)])
-          myChart.dispatchAction({
-            type: 'dataZoom',
-            startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
-            endValue:
-              dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+        // Enable data zoom when user click bar only if zoom is enabled
+        if (this._props.enableZoom) {
+          const zoomSize = 6
+          myChart.on('click', function (params) {
+            myChart.dispatchAction({
+              type: 'dataZoom',
+              startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
+              endValue: dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
+            })
           })
-        })
+        }
+      } catch (error) {
+        console.error('Bar Gradient: Error rendering chart:', error)
       }
     }
   }
 
-  customElements.define('com-sap-sample-echarts-bar-gradient-binding', Main)
+  customElements.define('bar-gradient-binding', Main)
 })()

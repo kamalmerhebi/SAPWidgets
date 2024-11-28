@@ -1,6 +1,27 @@
 # Bar Gradient Binding Widget Changelog
 
-## [1.1.0] - 2024-01-09
+## [1.1.0] - 2024-01-24
+
+### Changed
+- Updated widget identification:
+  - Changed ID to "insightcubes.sac.bargradient"
+  - Simplified name to "Bar Gradient"
+  - Updated instance prefix to "BarGradient"
+  - Updated custom element tag to "bar-gradient-binding"
+- Added comprehensive property descriptions
+- Enhanced method documentation
+
+### Added
+- Customizable gradient colors for bars
+- Title customization (text, font size, color)
+- Axis label formatting and color options
+- Bar width and gap controls
+- Zoom functionality toggle
+- Mobile device support
+
+### Fixed
+- Improved property getter/setter consistency
+- Enhanced error handling in data binding
 
 ### New Features
 - Added extensive customization options:
