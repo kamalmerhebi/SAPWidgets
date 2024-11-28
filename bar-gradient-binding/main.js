@@ -31,12 +31,23 @@ var getScriptPromisify = (src) => {
 
   const parseDataBinding = (dataBinding) => {
     try {
-      if (!dataBinding || typeof dataBinding !== 'object') {
+      if (!dataBinding) {
+        console.log('Data binding not yet initialized');
+        return { data: [], dataAxis: [] };
+      }
+
+      if (typeof dataBinding !== 'object') {
         console.warn('Data binding is not an object:', dataBinding);
         return { data: [], dataAxis: [] };
       }
 
-      const data = dataBinding.data || [];
+      // During initialization, data might not be available yet
+      if (!dataBinding.data) {
+        console.log('Data not yet available in binding');
+        return { data: [], dataAxis: [] };
+      }
+
+      const data = dataBinding.data;
       const metadata = dataBinding.metadata;
 
       if (!Array.isArray(data)) {
@@ -250,11 +261,17 @@ var getScriptPromisify = (src) => {
         console.log('Updated data binding:', this.myDataBinding);
       }
       
+      // During initialization, we might get called before data is ready
+      if (!this._initialized) {
+        console.log('Widget not fully initialized yet, deferring render');
+        return;
+      }
+      
       // Only render if we have data
       if (this.myDataBinding && this.myDataBinding.data) {
         this.render();
       } else {
-        console.warn('No valid data binding available for rendering');
+        console.log('Waiting for data to be available');
         if (this._root) {
           this._root.innerHTML = 'Waiting for data...';
         }
@@ -267,7 +284,7 @@ var getScriptPromisify = (src) => {
         console.log('Current data binding:', this.myDataBinding);
         
         if (!this._initialized) {
-          console.warn('Chart not initialized yet');
+          console.log('Chart not initialized yet, skipping render');
           return;
         }
         
@@ -277,7 +294,7 @@ var getScriptPromisify = (src) => {
         }
 
         if (!this.myDataBinding) {
-          console.warn('No data binding available');
+          console.log('No data binding available yet');
           this._root.innerHTML = 'Waiting for data...';
           return;
         }
@@ -286,6 +303,7 @@ var getScriptPromisify = (src) => {
         const { option, data, dataAxis } = getOption(this.myDataBinding);
         
         if (!data.length) {
+          console.log('No data available yet');
           this._root.innerHTML = 'No data available';
           return;
         }
