@@ -1,19 +1,26 @@
 {
+  "name": "Bar Gradient",
+  "description": "Bar chart with gradient effect",
+  "newInstancePrefix": "barGradient",
   "eula": "",
   "vendor": "InsightCubes",
   "license": "",
-  "id": "InsightCubes.bargradient",
-  "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABACAYAAABP97SyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwUlEQVRoge3XwQ3CMAxGYRsxDXCDgWANFugYTMStmccsQMnBRO4fve8aRc1TI1kxA1DJqw/Qc70vzd1O39bCor1fz8uv/Ycxx/qfrTgzMzc/9/bvPjCLQHUEqiNQHYHqCFRHoLrpA4+jP5B9z2UN/4PZ91zW9FeUQHUEqps+sDsHq+dYVvcPVs+xrOmvKIHqCFRHoDoC1RGojkB1BKojUB2B6ghU1w0Mi7a5FrbufT+AWn57LFF9iJEYE+qmDwRQ6wO/gymA985iUgAAAABJRU5ErkJggg==",
+  "id": "InsightCubes.bargradient_1.x",
   "version": "1.0.0",
+  "icon": "",
   "supportsMobile": true,
-  "name": "Bar Gradient",
-  "newInstancePrefix": "BarGradient",
-  "description": "Bar gradient visualization widget",
   "webcomponents": [
     {
       "kind": "main",
       "tag": "insightcubes-bargradient",
-      "url": "https://insightcubes.com/sacwidgets/SAPWidgets/barGradient/barGradientMain.js",
+      "url": "https://raw.githubusercontent.com/kamalmerhebi/SAPWidgets/main/barGradient/barGradientMain.js",
+      "integrity": "",
+      "ignoreIntegrity": true
+    },
+    {
+      "kind": "styling",
+      "tag": "insightcubes-bargradient-sps",
+      "url": "https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js",
       "integrity": "",
       "ignoreIntegrity": true
     }
@@ -28,7 +35,14 @@
       "default": 420
     }
   },
-  "methods": {},
+  "methods": {
+    "getOption": {
+      "returnType": "string",
+      "description": "Get chart option",
+      "parameters": [],
+      "body": "return this.option;"
+    }
+  },
   "events": {},
   "dataBindings": {
     "myDataBinding": {

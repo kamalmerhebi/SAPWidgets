@@ -20,80 +20,67 @@ var getScriptPromisify = (src) => {
     return { dimensions, measures, dimensionsMap, measuresMap }
   }
 
-  const parseDataBinding = (dataBinding) => {
-    const { data, metadata } = dataBinding
-    const { dimensions, measures } = parseMetadata(metadata)
-
-    // dimension
-    const categoryData = []
-    // measures
-    const series = measures.map(measure => {
-      return {
-        data: [],
-        key: measure.key
-      }
-    })
-    data.forEach(row => {
-    // dimension
-      categoryData.push(dimensions.map(dimension => {
-        return row[dimension.key].label
-      }).join('/'))
-      // measures
-      series.forEach(series => {
-        series.data.push(row[series.key].raw)
-      })
-    })
-    return { data: series[0].data, dataAxis: categoryData }
-  }
-  const getOption = (dataBinding) => {
-    const { data, dataAxis } = parseDataBinding(dataBinding)
-    let yMax = 0
-    data.forEach(y => {
-      yMax = Math.max(y, yMax)
-    })
-    const dataShadow = []
-    for (let i = 0; i < data.length; i++) {
-      dataShadow.push(yMax)
+  const parseDataBinding = dataBinding => {
+    const metadata = parseMetadata(dataBinding.metadata)
+    return {
+      data: dataBinding.data,
+      metadata
     }
-    const option = {
+  }
+
+  const createChartOption = dataBinding => {
+    if (!dataBinding) {
+      return {
+        title: {
+          text: 'No data selected'
+        }
+      }
+    }
+
+    const { data, metadata: { dimensions, measures } } = parseDataBinding(dataBinding)
+    const [dimension] = dimensions
+    const [measure] = measures
+
+    const xAxisData = []
+    const seriesData = []
+
+    data.forEach(row => {
+      xAxisData.push(row[dimension.key].label)
+      seriesData.push(row[measure.key].raw)
+    })
+
+    return {
       title: {
-        text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
+        text: measure.label,
+        left: 'center'
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
       },
       xAxis: {
-        data: dataAxis,
+        type: 'category',
+        data: xAxisData,
         axisLabel: {
-          inside: true,
-          color: '#000'
-        },
-        axisTick: {
-          show: false
-        },
-        axisLine: {
-          show: false
-        },
-        z: 10
+          interval: 0,
+          rotate: 30
+        }
       },
       yAxis: {
-        axisLine: {
-          show: false
-        },
-        axisTick: {
-          show: false
-        },
-        axisLabel: {
-          formatter: '{value} Million',
-          color: '#999'
-        }
+        type: 'value'
       },
-      dataZoom: [
-        {
-          type: 'inside'
-        }
-      ],
       series: [
         {
+          data: seriesData,
           type: 'bar',
-          showBackground: true,
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               { offset: 0, color: '#83bff6' },
@@ -109,21 +96,23 @@ var getScriptPromisify = (src) => {
                 { offset: 1, color: '#83bff6' }
               ])
             }
-          },
-          data: data
+          }
         }
       ]
     }
-    return { option, data, dataAxis }
   }
 
   const template = document.createElement('template')
   template.innerHTML = `
       <style>
+        #root {
+          width: 100%;
+          height: 100%;
+        }
       </style>
-      <div id="root" style="width: 100%; height: 100%;">
-      </div>
-    `
+      <div id="root" style="width: 100%; height: 100%;"></div>
+  `
+
   class Main extends HTMLElement {
     constructor () {
       super()
@@ -132,45 +121,41 @@ var getScriptPromisify = (src) => {
       this._shadowRoot.appendChild(template.content.cloneNode(true))
 
       this._root = this._shadowRoot.getElementById('root')
-
+      this._myChart = null
       this._props = {}
+      this.option = ''
 
       this.render()
+    }
+
+    async onCustomWidgetAfterUpdate(changedProps) {
+      this._props = { ...this._props, ...changedProps }
+      
+      if (!this._myChart) {
+        this._myChart = echarts.init(this._root)
+      }
+      
+      const option = createChartOption(this._props.dataBinding)
+      this._myChart.setOption(option)
+      this.option = JSON.stringify(option)
     }
 
     onCustomWidgetResize (width, height) {
-      this.render()
-    }
-
-    onCustomWidgetAfterUpdate (changedProps) {
-      this.render()
+      if (this._myChart) {
+        this._myChart.resize()
+      }
     }
 
     async render () {
-      if (!window.echarts) {
-        await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js')
+      await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js')
+      
+      if (!this._myChart) {
+        this._myChart = echarts.init(this._root)
       }
 
-      if (this._myChart) {
-        echarts.dispose(this._myChart)
-      }
-      if (!this.myDataBinding || this.myDataBinding.state !== 'success') { return }
-
-      const myChart = this._myChart = echarts.init(this._root)
-      const { option, data, dataAxis } = getOption(this.myDataBinding)
-      myChart.setOption(option)
-
-      // Enable data zoom when user click bar.
-      const zoomSize = 6
-      myChart.on('click', function (params) {
-        console.log(dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)])
-        myChart.dispatchAction({
-          type: 'dataZoom',
-          startValue: dataAxis[Math.max(params.dataIndex - zoomSize / 2, 0)],
-          endValue:
-            dataAxis[Math.min(params.dataIndex + zoomSize / 2, data.length - 1)]
-        })
-      })
+      const option = createChartOption(this._props.dataBinding)
+      this._myChart.setOption(option)
+      this.option = JSON.stringify(option)
     }
   }
 
