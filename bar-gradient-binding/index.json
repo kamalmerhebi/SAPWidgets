@@ -1,18 +1,18 @@
 {
   "eula": "",
-  "vendor": "InsightCubes",
+  "vendor": "SAP",
   "license": "",
-  "id": "com.insightcubes.sac.bargradient_1.x",
+  "id": "com.sap.sac.sample.echarts.bargradientbindingdemo",
   "icon": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAABACAYAAABP97SyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAwUlEQVRoge3XwQ3CMAxGYRsxDXCDgWANFugYTMStmccsQMnBRO4fve8aRc1TI1kxA1DJqw/Qc70vzd1O39bCor1fz8uv/Ycxx/qfrTgzMzc/9/bvPjCLQHUEqiNQHYHqCFRHoLrpA4+jP5B9z2UN/4PZ91zW9FeUQHUEqps+sDsHq+dYVvcPVs+xrOmvKIHqCFRHoDoC1RGojkB1BKojUB2B6ghU1w0Mi7a5FrbufT+AWn57LFF9iJEYE+qmDwRQ6wO/gymA985iUgAAAABJRU5ErkJggg==",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "supportsMobile": true,
-  "name": "Bar Gradient",
-  "newInstancePrefix": "BarGradient",
-  "description": "A customizable bar chart widget with gradient effects",
+  "name": "ECharts BarGradientBinding",
+  "newInstancePrefix": "EChartBarGradientBinding",
+  "description": "A sample custom widget wrapped EChart BarGradientBinding",
   "webcomponents": [
     {
       "kind": "main",
-      "tag": "com-insightcubes-sac-bargradient",
+      "tag": "com-sap-sample-echarts-bar-gradient-binding",
       "url": "https://cdn.jsdelivr.net/gh/kamalmerhebi/SAPWidgets@main/bar-gradient-binding/main.js",
       "integrity": "",
       "ignoreIntegrity": true
@@ -21,87 +21,14 @@
   "properties": {
     "width": {
       "type": "integer",
-      "default": 600,
-      "description": "Width of the chart in pixels"
+      "default": 600
     },
     "height": {
       "type": "integer",
-      "default": 420,
-      "description": "Height of the chart in pixels"
-    },
-    "title": {
-      "type": "string",
-      "default": "Bar Gradient Chart",
-      "description": "Main title of the chart"
-    },
-    "titleFontSize": {
-      "type": "integer",
-      "default": 18,
-      "description": "Font size of the chart title in pixels"
-    },
-    "titleColor": {
-      "type": "string",
-      "default": "#333333",
-      "description": "Color of the chart title in hex format"
-    },
-    "gradientStartColor": {
-      "type": "string",
-      "default": "#83bff6",
-      "description": "Starting color of the bar gradient in hex format"
-    },
-    "gradientMiddleColor": {
-      "type": "string",
-      "default": "#188df0",
-      "description": "Middle color of the bar gradient in hex format"
-    },
-    "gradientEndColor": {
-      "type": "string",
-      "default": "#188df0",
-      "description": "End color of the bar gradient in hex format"
-    },
-    "barWidth": {
-      "type": "integer",
-      "default": 40,
-      "description": "Width of each bar in pixels"
-    },
-    "barGap": {
-      "type": "integer",
-      "default": 30,
-      "description": "Gap between bars in percentage"
-    },
-    "axisLabelFormat": {
-      "type": "string",
-      "default": "{value} Million",
-      "description": "Format string for axis labels"
-    },
-    "axisLabelColor": {
-      "type": "string",
-      "default": "#999999",
-      "description": "Color of axis labels in hex format"
-    },
-    "enableZoom": {
-      "type": "boolean",
-      "default": true,
-      "description": "Enable or disable chart zooming functionality"
+      "default": 420
     }
   },
-  "methods": {
-    "getTitle": {
-      "returnType": "string",
-      "description": "Returns the current chart title",
-      "body": "return this.title;"
-    },
-    "setTitle": {
-      "parameters": [
-        {
-          "name": "title",
-          "type": "string",
-          "description": "New title text to be set for the chart"
-        }
-      ],
-      "description": "Sets a new title for the chart and updates the visualization"
-    }
-  },
+  "methods": {},
   "events": {},
   "dataBindings": {
     "myDataBinding": {
