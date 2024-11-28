@@ -7,9 +7,31 @@ var getScriptPromisify = (src) => {
         reject(exception);
       });
   });
-}
+};
 
-(function () {
+(function() {
+  const showError = (root, message) => {
+    root.innerHTML = `
+      <div class="error-container">
+        <div class="error-message">${message}</div>
+        <div class="error-details">Please check console for more details</div>
+      </div>
+    `;
+  };
+
+  const validateDataStructure = (data) => {
+    if (!data || typeof data !== 'object') {
+      return { valid: false, error: 'Invalid data structure' };
+    }
+    if (!Array.isArray(data.data)) {
+      return { valid: false, error: 'Data must be an array' };
+    }
+    if (!data.metadata) {
+      return { valid: false, error: 'Missing metadata' };
+    }
+    return { valid: true };
+  };
+
   const parseMetadata = metadata => {
     if (!metadata) {
       console.warn('No metadata provided');
@@ -25,17 +47,13 @@ var getScriptPromisify = (src) => {
     try {
       console.log('Parsing data binding:', JSON.stringify(dataBinding));
 
-      if (!dataBinding || !dataBinding.data) {
-        console.warn('Invalid or missing data binding:', dataBinding);
+      const validation = validateDataStructure(dataBinding);
+      if (!validation.valid) {
+        console.warn(validation.error);
         return { data: [], dataAxis: [] };
       }
 
       const { data: bindingData, metadata } = dataBinding;
-
-      if (!Array.isArray(bindingData)) {
-        console.warn('Data binding "data" is not an array:', bindingData);
-        return { data: [], dataAxis: [] };
-      }
 
       const { dimensions = [], measures = [] } = parseMetadata(metadata);
 
@@ -120,6 +138,23 @@ var getScriptPromisify = (src) => {
         title: {
           text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
         },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        toolbox: {
+          feature: {
+            saveAsImage: {}
+          }
+        },
         xAxis: {
           data: dataAxis,
           axisLabel: {
@@ -191,47 +226,137 @@ var getScriptPromisify = (src) => {
     }
   };
 
-  const template = document.createElement('template')
+  const template = document.createElement('template');
   template.innerHTML = `
-      <style>
-      </style>
-      <div id="root" style="width: 100%; height: 100%;">
-      </div>
-    `
+    <style>
+      .error-container {
+        padding: 20px;
+        text-align: center;
+        color: #721c24;
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        border-radius: 4px;
+      }
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        color: #666;
+      }
+      .error-message {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+      .error-details {
+        font-size: 0.9em;
+        opacity: 0.8;
+      }
+    </style>
+    <div id="root" style="width: 100%; height: 100%;"></div>
+  `;
 
   class Main extends HTMLElement {
-    constructor () {
-      super()
-      this._shadowRoot = this.attachShadow({ mode: 'open' })
-      this._shadowRoot.appendChild(template.content.cloneNode(true))
-      this._root = this._shadowRoot.getElementById('root')
-      this._props = {}
-      this._initialized = false
-      this._myChart = null
-      this.myDataBinding = null
+    constructor() {
+      super();
+      this._shadowRoot = this.attachShadow({ mode: 'open' });
+      this._shadowRoot.appendChild(template.content.cloneNode(true));
+      this._root = this._shadowRoot.getElementById('root');
+      this._props = {};
+      this._initialized = false;
+      this._myChart = null;
+      this._loading = false;
+      this._renderTimeout = null;
+      this.myDataBinding = null;
+
+      // Initialize ResizeObserver
+      this._resizeObserver = new ResizeObserver(() => {
+        if (this._myChart) {
+          this._myChart.resize();
+        }
+      });
     }
 
     async connectedCallback() {
       try {
+        this.setLoadingState(true);
         if (!window.echarts) {
           await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js');
         }
         this._initialized = true;
+        this._resizeObserver.observe(this._root);
         this.render();
       } catch (err) {
         console.error('Failed to initialize ECharts:', err);
-        this._root.innerHTML = 'Failed to load ECharts library. Please check console for details.';
+        showError(this._root, 'Failed to load ECharts library');
+      } finally {
+        this.setLoadingState(false);
       }
     }
 
     disconnectedCallback() {
+      this.cleanupResources();
+    }
+
+    cleanupResources() {
       if (this._myChart) {
         this._myChart.dispose();
         this._myChart = null;
       }
+      if (this._renderTimeout) {
+        clearTimeout(this._renderTimeout);
+        this._renderTimeout = null;
+      }
+      if (this._resizeObserver) {
+        this._resizeObserver.disconnect();
+        this._resizeObserver = null;
+      }
     }
 
-    onCustomWidgetResize (width, height) {
+    setLoadingState(loading) {
+      this._loading = loading;
+      if (loading) {
+        this._root.innerHTML = '<div class="loading">Loading chart...</div>';
+      }
+    }
+
+    debouncedRender() {
+      if (this._renderTimeout) {
+        clearTimeout(this._renderTimeout);
+      }
+      this._renderTimeout = setTimeout(() => {
+        this.render();
+      }, 100);
+    }
+
+    attachEventHandlers() {
+      if (!this._myChart) return;
+
+      this._myChart.on('click', (params) => {
+        // Dispatch custom event
+        const event = new CustomEvent('chartClick', {
+          detail: {
+            dataIndex: params.dataIndex,
+            value: params.value,
+            name: params.name
+          }
+        });
+        this.dispatchEvent(event);
+
+        // Handle zoom
+        const zoomSize = 6;
+        const startIdx = Math.max(params.dataIndex - zoomSize / 2, 0);
+        const endIdx = Math.min(params.dataIndex + zoomSize / 2, params.data.length - 1);
+        
+        this._myChart.dispatchAction({
+          type: 'dataZoom',
+          startValue: params.name,
+          endValue: params.name
+        });
+      });
+    }
+
+    onCustomWidgetResize(width, height) {
       if (this._myChart) {
         this._myChart.resize();
       }
@@ -253,17 +378,10 @@ var getScriptPromisify = (src) => {
         return;
       }
       
-      if (this.myDataBinding && this.myDataBinding.data) {
-        this.render();
-      } else {
-        console.log('Waiting for data to be available');
-        if (this._root) {
-          this._root.innerHTML = 'Waiting for data...';
-        }
-      }
+      this.debouncedRender();
     }
 
-    async render () {
+    async render() {
       try {
         console.log('Render called. Initialization state:', this._initialized);
         console.log('Current data binding:', this.myDataBinding);
@@ -280,7 +398,7 @@ var getScriptPromisify = (src) => {
 
         if (!this.myDataBinding) {
           console.log('No data binding available yet');
-          this._root.innerHTML = 'Waiting for data...';
+          this._root.innerHTML = '<div class="loading">Waiting for data...</div>';
           return;
         }
 
@@ -289,29 +407,18 @@ var getScriptPromisify = (src) => {
         
         if (!data.length) {
           console.log('No data available yet');
-          this._root.innerHTML = 'No data available';
+          showError(this._root, 'No data available');
           return;
         }
 
         myChart.setOption(option);
-
-        const zoomSize = 6;
-        myChart.on('click', (params) => {
-          const startIdx = Math.max(params.dataIndex - zoomSize / 2, 0);
-          const endIdx = Math.min(params.dataIndex + zoomSize / 2, data.length - 1);
-          
-          myChart.dispatchAction({
-            type: 'dataZoom',
-            startValue: dataAxis[startIdx],
-            endValue: dataAxis[endIdx]
-          });
-        });
+        this.attachEventHandlers();
       } catch (err) {
         console.error('Error rendering chart:', err);
-        this._root.innerHTML = 'Error rendering chart. Please check console for details.';
+        showError(this._root, 'Error rendering chart');
       }
     }
   }
 
-  customElements.define('com-sap-sample-echarts-bar-gradient-binding', Main)
-})()
+  customElements.define('com-sap-sample-echarts-bar-gradient-binding', Main);
+})();
