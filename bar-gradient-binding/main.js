@@ -240,11 +240,25 @@ var getScriptPromisify = (src) => {
 
     onCustomWidgetAfterUpdate(changedProps) {
       console.log('onCustomWidgetAfterUpdate called with:', changedProps);
-      if (changedProps.myDataBinding) {
-        console.log('Data binding updated:', changedProps.myDataBinding);
-        this.myDataBinding = changedProps.myDataBinding;
+      
+      // Access the data binding from the component's properties
+      const dataBinding = this.myDataBinding || changedProps.myDataBinding;
+      console.log('Current data binding state:', dataBinding);
+      
+      if (dataBinding) {
+        this.myDataBinding = dataBinding;
+        console.log('Updated data binding:', this.myDataBinding);
       }
-      this.render();
+      
+      // Only render if we have data
+      if (this.myDataBinding && this.myDataBinding.data) {
+        this.render();
+      } else {
+        console.warn('No valid data binding available for rendering');
+        if (this._root) {
+          this._root.innerHTML = 'Waiting for data...';
+        }
+      }
     }
 
     async render () {
