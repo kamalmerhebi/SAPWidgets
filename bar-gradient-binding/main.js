@@ -1,266 +1,37 @@
-var getScriptPromisify = (src) => {
-  return new Promise((resolve, reject) => {
-    $.getScript(src)
-      .done(resolve)
-      .fail((jqxhr, settings, exception) => {
-        console.error('Failed to load script:', src, exception);
-        reject(exception);
-      });
-  });
-};
-
-(function () {
-  const showError = (root, message) => {
-    root.innerHTML = `
-      <div class="error-container">
-        <div class="error-message">${message}</div>
-        <div class="error-details">Please check console for more details</div>
-      </div>
-    `;
-  };
-
-  const validateDataStructure = (data) => {
-    if (!data || typeof data !== 'object') {
-      return { valid: false, error: 'Invalid data structure' };
-    }
-    if (!Array.isArray(data.data)) {
-      return { valid: false, error: 'Data must be an array' };
-    }
-    if (!data.metadata) {
-      return { valid: false, error: 'Missing metadata' };
-    }
-    return { valid: true };
-  };
-
-  const parseMetadata = metadata => {
-    if (!metadata) {
-      console.warn('No metadata provided');
-      return { dimensions: [], measures: [], dimensionsMap: {}, measuresMap: {} };
-    }
-    const { dimensions: dimensionsMap = {}, mainStructureMembers: measuresMap = {} } = metadata;
-    const dimensions = Object.entries(dimensionsMap).map(([key, dimension]) => ({ key, ...dimension }));
-    const measures = Object.entries(measuresMap).map(([key, measure]) => ({ key, ...measure }));
-    return { dimensions, measures, dimensionsMap, measuresMap };
-  };
-
-  const parseDataBinding = (dataBinding) => {
-    try {
-      console.log('Parsing data binding:', JSON.stringify(dataBinding));
-
-      const validation = validateDataStructure(dataBinding);
-      if (!validation.valid) {
-        console.warn(validation.error);
-        return { data: [], dataAxis: [] };
-      }
-
-      const { data: bindingData, metadata } = dataBinding;
-
-      const { dimensions = [], measures = [] } = parseMetadata(metadata);
-
-      if (!dimensions.length || !measures.length) {
-        console.warn('No dimensions or measures found');
-        return { data: [], dataAxis: [] };
-      }
-
-      const categoryData = [];
-      const series = measures.map(measure => ({
-        data: [],
-        key: measure.key
-      }));
-
-      bindingData.forEach((row, index) => {
-        if (!row) {
-          console.warn(`Skipping null/undefined row at index ${index}`);
-          return;
-        }
-
-        try {
-          const labels = dimensions.map(dimension => {
-            const dimData = row[dimension.key];
-            return dimData && typeof dimData === 'object' ? dimData.label || '' : '';
-          }).filter(label => label !== '');
-
-          if (labels.length > 0) {
-            categoryData.push(labels.join('/'));
-            series.forEach(seriesItem => {
-              const measureData = row[seriesItem.key];
-              const value = measureData && typeof measureData === 'object' ?
-                (measureData.raw !== undefined ? measureData.raw : 0) : 0;
-              seriesItem.data.push(value);
-            });
-          } else {
-            console.warn(`No valid labels found for row ${index}`);
-          }
-        } catch (err) {
-          console.warn(`Error processing row ${index}:`, err);
-        }
-      });
-
-      if (!series[0] || !Array.isArray(series[0].data)) {
-        console.warn('No valid series data found');
-        return { data: [], dataAxis: [] };
-      }
-
-      return {
-        data: series[0].data,
-        dataAxis: categoryData
-      };
-    } catch (err) {
-      console.error('Error parsing data binding:', err);
-      return { data: [], dataAxis: [] };
-    }
-  };
-
-  const getOption = (dataBinding) => {
-    try {
-      console.log('Processing data binding in getOption:', dataBinding ? 'present' : 'missing');
-
-      const { data, dataAxis } = parseDataBinding(dataBinding);
-
-      if (!Array.isArray(data) || !data.length) {
-        console.log('No valid data available for chart');
-        return {
-          option: {
-            title: {
-              text: 'Waiting for data...',
-              left: 'center',
-              top: 'center'
-            }
-          },
-          data: [],
-          dataAxis: []
-        };
-      }
-
-      const yMax = data.reduce((max, val) => Math.max(max, Number(val) || 0), 0);
-
-      const option = {
-        title: {
-          text: 'Feature Sample: Gradient Color, Shadow, Click Zoom'
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'shadow'
-          }
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
-        },
-        toolbox: {
-          feature: {
-            saveAsImage: {}
-          }
-        },
-        xAxis: {
-          data: dataAxis,
-          axisLabel: {
-            inside: true,
-            color: '#000'
-          },
-          axisTick: {
-            show: false
-          },
-          axisLine: {
-            show: false
-          },
-          z: 10
-        },
-        yAxis: {
-          axisLine: {
-            show: false
-          },
-          axisTick: {
-            show: false
-          },
-          axisLabel: {
-            color: '#999'
-          }
-        },
-        dataZoom: [
-          {
-            type: 'inside'
-          }
-        ],
-        series: [
-          {
-            type: 'bar',
-            showBackground: true,
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#83bff6' },
-                { offset: 0.5, color: '#188df0' },
-                { offset: 1, color: '#188df0' }
-              ])
-            },
-            emphasis: {
-              itemStyle: {
-                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                  { offset: 0, color: '#2378f7' },
-                  { offset: 0.7, color: '#2378f7' },
-                  { offset: 1, color: '#83bff6' }
-                ])
-              }
-            },
-            data: data
-          }
-        ]
-      };
-      return { option, data, dataAxis };
-    } catch (err) {
-      console.error('Error in getOption:', err);
-      return {
-        option: {
-          title: {
-            text: 'Error processing data',
-            left: 'center',
-            top: 'center'
-          }
-        },
-        data: [],
-        dataAxis: []
-      };
-    }
-  };
-
-  const template = document.createElement('template');
-  template.innerHTML = `
-    <style>
-      .error-container {
-        padding: 20px;
-        text-align: center;
-        color: #721c24;
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        border-radius: 4px;
-      }
-      .loading {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        color: #666;
-      }
-      .error-message {
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-      .error-details {
-        font-size: 0.9em;
-        opacity: 0.8;
-      }
-    </style>
-    <div id="root" style="width: 100%; height: 100%;"></div>
-  `;
+!function() {
+  "use strict";
+  let widgetName = "insightcubes-echarts-bargradient";
 
   class Main extends HTMLElement {
     constructor() {
       super();
       this._shadowRoot = this.attachShadow({ mode: 'open' });
-      this._shadowRoot.appendChild(template.content.cloneNode(true));
+      this._shadowRoot.innerHTML = `
+        <style>
+          #root {
+            width: 100%;
+            height: 100%;
+          }
+          .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #ff0000;
+          }
+          .error-message {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+          }
+          .error-details {
+            font-size: 14px;
+          }
+        </style>
+        <div id="root"></div>
+      `;
+      
       this._root = this._shadowRoot.getElementById('root');
       this._props = {};
       this._initialized = false;
@@ -269,7 +40,6 @@ var getScriptPromisify = (src) => {
       this._renderTimeout = null;
       this.myDataBinding = null;
 
-      // Initialize ResizeObserver
       this._resizeObserver = new ResizeObserver(() => {
         if (this._myChart) {
           this._myChart.resize();
@@ -277,21 +47,37 @@ var getScriptPromisify = (src) => {
       });
     }
 
-    async connectedCallback() {
-      try {
-        this.setLoadingState(true);
-        if (!window.echarts) {
-          await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js');
-        }
+    loadECharts(callback) {
+      if (window.echarts) {
+        callback();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js';
+      script.onload = callback;
+      script.onerror = () => {
+        console.error('Failed to load ECharts library');
+        this.showError('Failed to load ECharts library');
+      };
+      document.head.appendChild(script);
+    }
+
+    showError(message) {
+      this._root.innerHTML = `
+        <div class="error-container">
+          <div class="error-message">${message}</div>
+          <div class="error-details">Please check console for more details</div>
+        </div>
+      `;
+    }
+
+    connectedCallback() {
+      this.loadECharts(() => {
         this._initialized = true;
         this._resizeObserver.observe(this._root);
         this.render();
-      } catch (err) {
-        console.error('Failed to initialize ECharts:', err);
-        showError(this._root, 'Failed to load ECharts library');
-      } finally {
-        this.setLoadingState(false);
-      }
+      });
     }
 
     disconnectedCallback() {
@@ -299,6 +85,9 @@ var getScriptPromisify = (src) => {
     }
 
     cleanupResources() {
+      if (this._resizeObserver) {
+        this._resizeObserver.disconnect();
+      }
       if (this._myChart) {
         this._myChart.dispose();
         this._myChart = null;
@@ -306,17 +95,6 @@ var getScriptPromisify = (src) => {
       if (this._renderTimeout) {
         clearTimeout(this._renderTimeout);
         this._renderTimeout = null;
-      }
-      if (this._resizeObserver) {
-        this._resizeObserver.disconnect();
-        this._resizeObserver = null;
-      }
-    }
-
-    setLoadingState(loading) {
-      this._loading = loading;
-      if (loading) {
-        this._root.innerHTML = '<div class="loading">Loading chart...</div>';
       }
     }
 
@@ -329,96 +107,147 @@ var getScriptPromisify = (src) => {
       }, 100);
     }
 
-    attachEventHandlers() {
-      if (!this._myChart) return;
-
-      this._myChart.on('click', (params) => {
-        // Dispatch custom event
-        const event = new CustomEvent('chartClick', {
-          detail: {
-            dataIndex: params.dataIndex,
-            value: params.value,
-            name: params.name
-          }
-        });
-        this.dispatchEvent(event);
-
-        // Handle zoom
-        const zoomSize = 6;
-        const startIdx = Math.max(params.dataIndex - zoomSize / 2, 0);
-        const endIdx = Math.min(params.dataIndex + zoomSize / 2, params.data.length - 1);
-
-        this._myChart.dispatchAction({
-          type: 'dataZoom',
-          startValue: params.name,
-          endValue: params.name
-        });
-      });
-    }
-
     onCustomWidgetResize(width, height) {
-      if (this._myChart) {
-        this._myChart.resize();
-      }
-    }
-
-    onCustomWidgetAfterUpdate(changedProps) {
-      console.log('onCustomWidgetAfterUpdate called with:', changedProps);
-
-      const dataBinding = this.myDataBinding || changedProps.myDataBinding;
-      console.log('Current data binding state:', dataBinding);
-
-      if (dataBinding) {
-        this.myDataBinding = dataBinding;
-        console.log('Updated data binding:', this.myDataBinding);
-      }
-
-      if (!this._initialized) {
-        console.log('Widget not fully initialized yet, deferring render');
-        return;
-      }
-
       this.debouncedRender();
     }
 
-    async render() {
+    onCustomWidgetAfterUpdate(changedProps) {
+      if ("myDataBinding" in changedProps) {
+        this.myDataBinding = changedProps["myDataBinding"];
+        this.render();
+      }
+    }
+
+    parseMetadata(metadata) {
+      if (!metadata) {
+        console.warn('No metadata provided');
+        return { dimensions: [], measures: [], dimensionsMap: {}, measuresMap: {} };
+      }
+    
+      const dimensions = [];
+      const measures = [];
+      const dimensionsMap = {};
+      const measuresMap = {};
+    
       try {
-        console.log('Render called. Initialization state:', this._initialized);
-        console.log('Current data binding:', this.myDataBinding);
+        Object.entries(metadata).forEach(([key, value]) => {
+          if (value.type === "dimension") {
+            dimensions.push(key);
+            dimensionsMap[key] = value;
+          } else if (value.type === "measure") {
+            measures.push(key);
+            measuresMap[key] = value;
+          }
+        });
+      } catch (err) {
+        console.error('Error parsing metadata:', err);
+      }
+    
+      return { dimensions, measures, dimensionsMap, measuresMap };
+    }
 
-        if (!this._initialized) {
-          console.log('Chart not initialized yet, skipping render');
-          return;
+    parseDataBinding(dataBinding) {
+      if (!dataBinding) {
+        console.warn('No data binding provided');
+        return { data: [], categories: [] };
+      }
+    
+      try {
+        const { data = [], metadata = {} } = dataBinding;
+        const { dimensions = [], measures = [] } = this.parseMetadata(metadata);
+    
+        if (dimensions.length === 0 || measures.length === 0) {
+          console.warn('No dimensions or measures found in metadata');
+          return { data: [], categories: [] };
         }
+    
+        const dimension = dimensions[0];
+        const measure = measures[0];
+        
+        const categories = [];
+        const values = [];
+    
+        data.forEach(item => {
+          if (item[dimension] !== undefined && item[measure] !== undefined) {
+            categories.push(item[dimension].toString());
+            values.push(parseFloat(item[measure]) || 0);
+          }
+        });
+    
+        return { data: values, categories };
+      } catch (err) {
+        console.error('Error parsing data binding:', err);
+        return { data: [], categories: [] };
+      }
+    }
 
-        if (this._myChart) {
-          this._myChart.dispose();
-          this._myChart = null;
+    getOption(dataBinding) {
+      const { data, categories } = this.parseDataBinding(dataBinding);
+      
+      return {
+        xAxis: {
+          type: 'category',
+          data: categories,
+          axisLabel: {
+            interval: 0,
+            rotate: 30
+          }
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [{
+          data: data.map((value, index) => ({
+            value: value,
+            itemStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                offset: 0,
+                color: '#83bff6'
+              }, {
+                offset: 0.5,
+                color: '#188df0'
+              }, {
+                offset: 1,
+                color: '#188df0'
+              }])
+            }
+          })),
+          type: 'bar'
+        }],
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          }
+        },
+        dataZoom: [{
+          type: 'inside',
+          start: 0,
+          end: 100
+        }, {
+          start: 0,
+          end: 100
+        }]
+      };
+    }
+
+    render() {
+      if (!this._initialized || !this.myDataBinding) {
+        return;
+      }
+
+      try {
+        if (!this._myChart) {
+          this._myChart = echarts.init(this._root);
         }
-
-        if (!this.myDataBinding) {
-          console.log('No data binding available yet');
-          this._root.innerHTML = '<div class="loading">Waiting for data...</div>';
-          return;
-        }
-
-        const myChart = this._myChart = echarts.init(this._root);
-        const { option, data, dataAxis } = getOption(this.myDataBinding);
-
-        if (!data.length) {
-          console.log('No data available yet');
-          showError(this._root, 'No data available');
-          return;
-        }
-
-        myChart.setOption(option);
-        this.attachEventHandlers();
+        const option = this.getOption(this.myDataBinding);
+        this._myChart.setOption(option);
       } catch (err) {
         console.error('Error rendering chart:', err);
-        showError(this._root, 'Error rendering chart');
+        this.showError('Failed to render chart');
       }
     }
   }
 
-  customElements.define('com-sap-sample-echarts-bar-gradient-binding', Main);
-})();
+  customElements.define(widgetName, Main);
+}();

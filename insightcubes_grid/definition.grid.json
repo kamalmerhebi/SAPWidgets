@@ -1,0 +1,180 @@
+{
+  "id": "insightcubes.iqcc_grid",
+  "version": "1.0.0",
+  "name": "InsightCubes Entity Grid View",
+  "description": "Displays an editable data grid for entity interco configuration",
+  "newInstancePrefix": "insightcubes.iqcc_grid",
+  "icon": "https://insightcubes.com/sacwidgets/iq-16x16-1.png",
+  "vendor": "Insight Cubes",
+  "eula": "",
+  "license": "",
+  "imports": [],
+  "webcomponents": [
+    {
+      "kind": "main",
+      "tag": "insightcubes-iqcc-grid",
+      "url": "https://insightcubes.com/sacwidgets/insightcubes_grid/component.js",
+      "integrity": "sha384-P8zLL1Ug+9wtK/lo8dchaCzwATSgSwSSkdKKm2X64yJiN8gTAoz4Qz8LeKf90aY9",
+      "ignoreIntegrity": false
+    }
+  ],
+  "properties": {},
+  "methods": {
+    "setDebugEnabled": {
+      "description": "Enables or disables debug mode. When off, all console logging within the widget is disabled. Off by default.",
+      "parameters": [
+        {
+          "name": "trueOrFalse",
+          "type": "boolean"
+        }
+      ]
+    },
+
+    "setMethods": {
+      "description": "Sets the list of selectable consolidation method values",
+      "returnType": "boolean",
+      "parameters": [
+        {
+          "name": "methodList",
+          "type": "string[]"
+        }
+      ]
+    },
+
+    "setDefaultMethod": {
+      "description": "Sets the default consolidation method to use when an item does not specify one. The value MUST be present in the input for 'setMethods()' method, or this method returns false and has no effect.",
+      "returnType": "boolean",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string"
+        }
+      ]
+    },
+
+    "clearItems": {
+      "description": "Removes item data"
+    },
+
+    "addItem": {
+      "description": "Add a new entity data item. Returns true if item was accepted, or false on input problem. Note that values for 'meth_sys' and 'meth_user' must appear in the 'setMethods()' method input.",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The unique ID of the item"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "description": "The display name of the item"
+        },
+        {
+          "name": "meth_sys",
+          "type": "string",
+          "description": "Value of P_MTH_SYS"
+        },
+        {
+          "name": "meth_user",
+          "type": "string",
+          "description": "Value of P_MTH"
+        },
+        {
+          "name": "cons_sys",
+          "type": "string",
+          "description": "Value of P_CON_SYS"
+        },
+        {
+          "name": "cons_user",
+          "type": "string",
+          "description": "Value of P_CON"
+        },
+        {
+          "name": "own_sys",
+          "type": "string",
+          "description": "Value of P_OWN_SYS"
+        },
+        {
+          "name": "own_user",
+          "type": "string",
+          "description": "Value of P_OWN"
+        }
+      ],
+      "returnType": "boolean"
+    },
+
+    "dataReady": {
+      "description": "Tell the component that all data items have been added.",
+      "returnType": "boolean"
+    },
+
+    "getItemIds": {
+      "description": "Returns an array of all entity ID's that was added with 'addItem()' method",
+      "returnType": "string[]"
+    },
+
+    "getChangedItemId": {
+      "description": "Use this method to get the changed item ID after the 'onItemChanged' event triggers.",
+      "returnType": "string"
+    },
+
+    "getChangedProperty": {
+      "description": "Returs the last property that the user changed, after the 'onItemChanged' event triggers. Values are [meth_user, cons_user, own_user], representing [P_MTH, P_CON, P_OWN] respectively.",
+      "returnType": "string"
+    },
+
+    "getItemName": {
+      "description": "Get the name value for the given item ID",
+      "returnType": "string",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the item"
+        }
+      ]
+    },
+
+    "getItemMethod": {
+      "description": "Get the P_MTH value for the given item ID",
+      "returnType": "string",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the item"
+        }
+      ]
+    },
+
+    "getItemConsolidation": {
+      "description": "Get the P_CON value for the given item ID",
+      "returnType": "string",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the item"
+        }
+      ]
+    },
+
+    "getItemOwnership": {
+      "description": "Get the P_OWN value for the given item ID",
+      "returnType": "string",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "The ID of the item"
+        }
+      ]
+    }
+  },
+
+  "events": {
+    "onItemChanged": {
+      "description": "Raised when a user changes any editable item. Use the getChangedItemId() method to get the changed item ID"
+    }
+  }
+}

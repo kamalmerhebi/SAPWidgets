@@ -8,6 +8,64 @@
 - Updated webcomponent tag to match new namespace
 - Modified custom element definition to align with new naming
 
+## [1.0.4] - 2024-01-24
+
+### Changed
+- Major architectural refactoring to support custom namespace
+- Simplified widget initialization process
+- Reduced dependency on SAP widget framework
+- Made widget more self-contained
+- Changed widget ID to use InsightCubes namespace
+
+### Before and After Code Comparison
+```javascript
+// Before - Complex initialization with heavy SAP framework dependency
+var getScriptPromisify = (src) => {
+  return new Promise((resolve, reject) => {
+    $.getScript(src)
+      .done(resolve)
+      .fail((jqxhr, settings, exception) => {
+        console.error('Failed to load script:', src, exception);
+        reject(exception);
+      });
+  });
+};
+
+// After - Simplified, self-contained initialization
+!function() {
+  "use strict";
+  let widgetName = "insightcubes-echarts-bargradient";
+```
+
+```javascript
+// Before - Complex async loading
+async connectedCallback() {
+  try {
+    this.setLoadingState(true);
+    if (!window.echarts) {
+      await getScriptPromisify('https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js');
+    }
+    this._initialized = true;
+    this._resizeObserver.observe(this._root);
+    this.render();
+  } catch (err) {
+    console.error('Failed to initialize ECharts:', err);
+    showError(this._root, 'Failed to load ECharts library');
+  } finally {
+    this.setLoadingState(false);
+  }
+}
+
+// After - Direct initialization with error handling
+connectedCallback() {
+  this.loadECharts(() => {
+    this._initialized = true;
+    this._resizeObserver.observe(this._root);
+    this.render();
+  });
+}
+```
+
 ## [1.0.3] - 2024-01-09
 
 ### Added
