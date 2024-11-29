@@ -29,7 +29,7 @@
             font-size: 14px;
           }
         </style>
-        <div id="root"></div>
+        <div id="root" role="region" aria-label="Bar Chart"></div>
       `;
       
       this._root = this._shadowRoot.getElementById('root');
@@ -40,11 +40,38 @@
       this._renderTimeout = null;
       this.myDataBinding = null;
 
+      // Set up keyboard navigation
+      this._root.tabIndex = 0;
+      this._root.addEventListener('keydown', this._handleKeydown.bind(this));
+
       this._resizeObserver = new ResizeObserver(() => {
         if (this._myChart) {
           this._myChart.resize();
         }
       });
+    }
+
+    _handleKeydown(event) {
+      if (!this._myChart) return;
+      
+      const key = event.key;
+      const option = this._myChart.getOption();
+      const currentData = option.series[0].data;
+      
+      switch (key) {
+        case 'ArrowRight':
+        case 'ArrowLeft':
+          // Handle left/right navigation
+          event.preventDefault();
+          // Implementation for bar navigation would go here
+          break;
+        case 'Enter':
+        case ' ':
+          // Handle selection
+          event.preventDefault();
+          // Implementation for bar selection would go here
+          break;
+      }
     }
 
     loadECharts(callback) {
@@ -66,7 +93,7 @@
     showError(message, details = '') {
       console.error('Widget Error:', message, details);
       this._root.innerHTML = `
-        <div class="error-container">
+        <div class="error-container" role="alert" aria-live="polite">
           <div class="error-message">${message}</div>
           ${details ? `<div class="error-details">${details}</div>` : ''}
         </div>
@@ -127,10 +154,8 @@
         
         const { data = [], metadata = {} } = dataBinding;
         
-        // Log metadata structure
         console.log('Metadata Structure:', JSON.stringify(metadata, null, 2));
 
-        // Find dimensions from feeds
         let dimensions = [];
         let measures = [];
 
@@ -202,6 +227,12 @@
       const { data, categories } = this.parseDataBinding(dataBinding);
       
       return {
+        aria: {
+          enabled: true,
+          decal: {
+            show: true
+          }
+        },
         xAxis: {
           type: 'category',
           data: categories,
@@ -256,9 +287,17 @@
       try {
         if (!this._myChart) {
           this._myChart = echarts.init(this._root);
+          
+          // Add accessibility description
+          this._root.setAttribute('aria-label', 'Bar chart visualization');
         }
+        
         const option = this.getOption(this.myDataBinding);
         this._myChart.setOption(option);
+        
+        // Update accessibility description with data summary
+        const summary = `Bar chart showing ${option.series[0].data.length} values`;
+        this._root.setAttribute('aria-label', summary);
       } catch (err) {
         console.error('Error rendering chart:', err);
         this.showError('Failed to render chart', err.message);
