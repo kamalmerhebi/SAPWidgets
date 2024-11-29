@@ -63,11 +63,12 @@
       document.head.appendChild(script);
     }
 
-    showError(message) {
+    showError(message, details = '') {
+      console.error('Widget Error:', message, details);
       this._root.innerHTML = `
         <div class="error-container">
           <div class="error-message">${message}</div>
-          <div class="error-details">Please check console for more details</div>
+          ${details ? `<div class="error-details">${details}</div>` : ''}
         </div>
       `;
     }
@@ -117,27 +118,51 @@
 
     parseDataBinding(dataBinding) {
       if (!dataBinding || !dataBinding.data) {
+        console.warn('No data binding provided');
         return { data: [], categories: [] };
       }
 
       try {
-        const { data, metadata } = dataBinding;
+        console.log('Data Binding Structure:', JSON.stringify(dataBinding, null, 2));
         
-        // Find dimension and measure from metadata
-        const dimensions = [];
-        const measures = [];
+        const { data = [], metadata = {} } = dataBinding;
         
-        if (metadata && metadata.dimensions) {
-          Object.keys(metadata.dimensions).forEach(key => {
-            dimensions.push(key);
+        // Log metadata structure
+        console.log('Metadata Structure:', JSON.stringify(metadata, null, 2));
+
+        // Find dimensions from feeds
+        let dimensions = [];
+        let measures = [];
+
+        if (metadata.feeds) {
+          Object.entries(metadata.feeds).forEach(([feedId, feed]) => {
+            console.log('Processing feed:', feedId, feed);
+            if (feed.values && feed.values.length > 0) {
+              const feedType = feed.feedType;
+              feed.values.forEach(value => {
+                if (feedType === 'Dimension') {
+                  dimensions.push(value);
+                } else if (feedType === 'Measure') {
+                  measures.push(value);
+                }
+              });
+            }
           });
         }
-        
-        if (metadata && metadata.mainStructureMembers) {
-          Object.keys(metadata.mainStructureMembers).forEach(key => {
-            measures.push(key);
-          });
+
+        // Fallback to old metadata structure if no feeds
+        if (dimensions.length === 0 && measures.length === 0) {
+          console.log('Falling back to old metadata structure');
+          if (metadata.dimensions) {
+            dimensions = Object.keys(metadata.dimensions);
+          }
+          if (metadata.mainStructureMembers) {
+            measures = Object.keys(metadata.mainStructureMembers);
+          }
         }
+
+        console.log('Found dimensions:', dimensions);
+        console.log('Found measures:', measures);
 
         if (!dimensions.length || !measures.length) {
           console.warn('No dimensions or measures found in metadata');
@@ -150,19 +175,25 @@
         const categories = [];
         const values = [];
 
-        data.forEach(item => {
+        data.forEach((item, index) => {
+          console.log('Processing data item:', index, item);
+          
           if (item[dimension] && item[measure]) {
             const dimValue = item[dimension].label || item[dimension];
             const measureValue = item[measure].raw !== undefined ? item[measure].raw : item[measure];
+            
+            console.log('Extracted values:', { dimension: dimValue, measure: measureValue });
             
             categories.push(dimValue.toString());
             values.push(parseFloat(measureValue) || 0);
           }
         });
 
+        console.log('Final processed data:', { categories, values });
         return { data: values, categories };
       } catch (err) {
         console.error('Error parsing data binding:', err);
+        this.showError('Error parsing data', err.message);
         return { data: [], categories: [] };
       }
     }
@@ -230,7 +261,7 @@
         this._myChart.setOption(option);
       } catch (err) {
         console.error('Error rendering chart:', err);
-        this.showError('Failed to render chart');
+        this.showError('Failed to render chart', err.message);
       }
     }
   }
