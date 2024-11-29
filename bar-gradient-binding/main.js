@@ -98,17 +98,8 @@
       }
     }
 
-    debouncedRender() {
-      if (this._renderTimeout) {
-        clearTimeout(this._renderTimeout);
-      }
-      this._renderTimeout = setTimeout(() => {
-        this.render();
-      }, 100);
-    }
-
-    onCustomWidgetResize(width, height) {
-      this.debouncedRender();
+    onCustomWidgetBeforeUpdate(changedProps) {
+      this._props = { ...this._props, ...changedProps };
     }
 
     onCustomWidgetAfterUpdate(changedProps) {
@@ -118,62 +109,57 @@
       }
     }
 
-    parseMetadata(metadata) {
-      if (!metadata) {
-        console.warn('No metadata provided');
-        return { dimensions: [], measures: [], dimensionsMap: {}, measuresMap: {} };
+    onCustomWidgetResize(width, height) {
+      if (this._myChart) {
+        this._myChart.resize();
       }
-    
-      const dimensions = [];
-      const measures = [];
-      const dimensionsMap = {};
-      const measuresMap = {};
-    
-      try {
-        Object.entries(metadata).forEach(([key, value]) => {
-          if (value.type === "dimension") {
-            dimensions.push(key);
-            dimensionsMap[key] = value;
-          } else if (value.type === "measure") {
-            measures.push(key);
-            measuresMap[key] = value;
-          }
-        });
-      } catch (err) {
-        console.error('Error parsing metadata:', err);
-      }
-    
-      return { dimensions, measures, dimensionsMap, measuresMap };
     }
 
     parseDataBinding(dataBinding) {
-      if (!dataBinding) {
-        console.warn('No data binding provided');
+      if (!dataBinding || !dataBinding.data) {
         return { data: [], categories: [] };
       }
-    
+
       try {
-        const { data = [], metadata = {} } = dataBinding;
-        const { dimensions = [], measures = [] } = this.parseMetadata(metadata);
-    
-        if (dimensions.length === 0 || measures.length === 0) {
+        const { data, metadata } = dataBinding;
+        
+        // Find dimension and measure from metadata
+        const dimensions = [];
+        const measures = [];
+        
+        if (metadata && metadata.dimensions) {
+          Object.keys(metadata.dimensions).forEach(key => {
+            dimensions.push(key);
+          });
+        }
+        
+        if (metadata && metadata.mainStructureMembers) {
+          Object.keys(metadata.mainStructureMembers).forEach(key => {
+            measures.push(key);
+          });
+        }
+
+        if (!dimensions.length || !measures.length) {
           console.warn('No dimensions or measures found in metadata');
           return { data: [], categories: [] };
         }
-    
+
         const dimension = dimensions[0];
         const measure = measures[0];
         
         const categories = [];
         const values = [];
-    
+
         data.forEach(item => {
-          if (item[dimension] !== undefined && item[measure] !== undefined) {
-            categories.push(item[dimension].toString());
-            values.push(parseFloat(item[measure]) || 0);
+          if (item[dimension] && item[measure]) {
+            const dimValue = item[dimension].label || item[dimension];
+            const measureValue = item[measure].raw !== undefined ? item[measure].raw : item[measure];
+            
+            categories.push(dimValue.toString());
+            values.push(parseFloat(measureValue) || 0);
           }
         });
-    
+
         return { data: values, categories };
       } catch (err) {
         console.error('Error parsing data binding:', err);
